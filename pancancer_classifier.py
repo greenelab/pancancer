@@ -2,11 +2,11 @@
 Gregory Way 2016
 Modified from https://github.com/cognoma/machine-learning/
 PanCancer NF1 Classifier
-classifier.py
+pancancer_classifier.py
 
 Usage: Run in command line with required command argument:
 
-        python classifier.py --genes $GENES
+        python pancancer_classifier.py --genes $GENES
 
 Where GENES is a comma separated string. There are also optional arguments:
 
@@ -18,6 +18,11 @@ Where GENES is a comma separated string. There are also optional arguments:
     --alphas            comma separated string of alphas to test in pipeline
     --l1_ratios         comma separated string of l1 parameters to test
     --alt_genes         comma separated string of alternative genes to test
+    --alt_tissues       comma separated string of alternative tissues to test
+    --alt_filter_count  int of low count of mutations to include alt_tissues
+    --alt_filter_prop   float of low proportion of mutated samples alt_tissue
+    --xena              if added, uses publicly available data instead of
+                        controlled access synapse data
 
 Output:
 ROC curves, AUROC across tissues, and classifier coefficients
@@ -58,21 +63,36 @@ parser.add_argument('-f', '--num_features', default=8000,
 parser.add_argument('-a', '--alphas', default='0.01,0.1,0.15,0.2,0.5,0.8',
                     help='the alphas for parameter sweep')
 parser.add_argument('-l', '--l1_ratios', default='0,0.1,0.15,0.18,0.2,0.3',
-                    help='the alphas for parameter sweep')
+                    help='the l1 ratios for parameter sweep')
 parser.add_argument('-b', '--alt_genes', default='None',
                     help='alternative genes to test classifier performance')
+parser.add_argument('-s', '--alt_tissues', default="Auto",
+                    help='The alternative tissues to test classifier'
+                         'performance')
+parser.add_argument('-i', '--alt_filter_count', default=15,
+                    help='Minimum number of mutations in tissue to include')
+parser.add_argument('-r', '--alt_filter_prop', default=0.05,
+                    help='Minimum proportion of positives to include tissue')
+parser.add_argument('-x', '--xena', action='store_true',
+                    help='Use Xena data instead of controlled-access data')
+
 args = parser.parse_args()
 
 # Load command arguments
 genes = args.genes.split(',')
 tissues = args.tissues.split(',')
 drop = args.drop
-filter_count = args.filter_count
-filter_prop = args.filter_prop
+filter_count = int(args.filter_count)
+filter_prop = float(args.filter_prop)
 num_features_kept = args.num_features
 alphas = [float(x) for x in args.alphas.split(',')]
 l1_ratios = [float(x) for x in args.l1_ratios.split(',')]
 alt_genes = args.alt_genes.split(',')
+xena = args.xena
+alt_filter_count = int(args.alt_filter_count)
+alt_filter_prop = float(args.alt_filter_prop)
+alt_tissues = args.alt_tissues.split(',')
+
 warnings.filterwarnings('ignore',
                         message='Changing the shape of non-C contiguous array')
 
@@ -133,32 +153,56 @@ def get_threshold_metrics(y_true, y_pred, tissue='all'):
     auroc = roc_auc_score(y_true, y_pred, average='weighted')
     return {'auroc': auroc, 'roc_df': roc_df, 'tissue': tissue}
 
-# Load Data
-rnaseq_df = pd.read_table('data/rnaseq_data.tsv', index_col=0)
-mutation_df = pd.read_table('data/mutation_table.tsv', index_col=0)
-clinical_df = pd.read_table('data/clinical_data.tsv', index_col=0,
-                            low_memory=False)
+# Load Datasets
+if xena:
+    expr_fh = 'data/xena/expression.tsv.bz2'
+    mut_fh = 'data/xena/mutation-matrix.bz2'
+    clin_fh = 'data/xena/samples.tsv'
+    gene_map = pd.read_table('data/xena/HiSeqV2-gene-map.tsv')
+    tcga_acronym = pd.read_table('data/tcga_dictionary.tsv')
+    ac = dict(zip(tcga_acronym.tissue, tcga_acronym.acronym))
+else:
+    expr_fh = 'data/rnaseq_data.tsv'
+    mut_fh = 'data/mutation_table.tsv'
+    clin_fh = 'data/clinical_data.tsv'
+
+rnaseq_df = pd.read_table(expr_fh, index_col=0)
+mutation_df = pd.read_table(mut_fh, index_col=0)
+clinical_df = pd.read_table(clin_fh, index_col=0, low_memory=False)
 
 # Subset data
-rnaseq_df.drop('SLC35E2', axis=0, inplace=True)
+if xena:
+    gene_map_dict = {str(k): str(v) for v, k in zip(gene_map.symbol,
+                                                    gene_map.entrez_gene_id)}
+    rnaseq_df = rnaseq_df.rename(index=str, columns=gene_map_dict)
+    mutation_df = mutation_df.rename(index=str, columns=gene_map_dict)
+    clinical_df = clinical_df.assign(acronym=clinical_df
+                                     .disease.replace(to_replace=ac))
+    base_add = 'XENA'
+else:
+    rnaseq_df.drop('SLC35E2', axis=0, inplace=True)
+    base_add = 'synapse'
 
 # Generate file names for output
-base_fh = 'tissues_' + args.tissues.replace(',', '_') + '_genes_' + \
-          args.genes.replace(',', '_')
+base_fh = '{}_tissues_{}_genes_{}'.format(base_add,
+                                          args.tissues.replace(',', '_'),
+                                          args.genes.replace(',', '_'))
 if drop:
-    base_fh = base_fh + '_DROP_GENE_INPUT_'
+    base_fh = '{}_DROP_GENE_INPUT_'.format(base_add)
     for gene in genes:
-        rnaseq_df.drop(gene, axis=0, inplace=True)
+        rnaseq_df.drop(gene, axis=1, inplace=True)
 
-mutation_heatmap_fh = 'figures/mutation_heatmap_' + base_fh + '.png'
-cv_plot_fh = 'figures/cv_plot_' + base_fh + '.png'
-cv_heatmap_fh = 'figures/cv_heatmap_' + base_fh + '.png'
-full_roc_fh = 'figures/all_tissue_roc_' + base_fh + '.png'
-tissue_roc_fh = 'figures/tissue/classifier_' + base_fh
-tissue_summary_fh = 'figures/tissue_summary_' + base_fh + '.png'
-classifier_fh = 'classifiers/log_coef_' + base_fh + '.tsv'
-alt_gene_tissue_fh = 'figures/alt_gene_' + args.alt_genes.replace(',', '_') + \
-                     '_classifier_' + base_fh + '.png'
+mutation_heatmap_fh = 'figures/mutation_heatmap_{}.png'.format(base_fh)
+cv_plot_fh = 'figures/cv_plot_{}.png'.format(base_fh)
+cv_heatmap_fh = 'figures/cv_heatmap_{}.png'.format(base_fh)
+full_roc_fh = 'figures/all_tissue_roc_{}.png'.format(base_fh)
+tissue_roc_fh = 'figures/tissue/classifier_{}'.format(base_fh)
+tissue_summary_fh = 'figures/tissue_summary_{}.png'.format(base_fh)
+classifier_fh = 'classifiers/log_coef_{}.tsv'.format(base_fh)
+alt_gene_tissue_fh = 'figures/alt_gene_{}_alt_tissues_{}_classifier_{}.png'\
+                     .format(args.alt_genes.replace(',', '_'),
+                             args.alt_tissues.replace(',', '_'),
+                             base_fh)
 
 # Construct data for classifier
 y = mutation_df[genes]
@@ -173,7 +217,7 @@ if tissues[0] == 'Auto':
     tissues = filter_tissue.index[filter_tissue].tolist()
 
 y_df = y[y.disease.isin(tissues)].max(axis=1)
-x_df = rnaseq_df.ix[:, y_df.index].T
+x_df = rnaseq_df.ix[y_df.index, :]
 clinical_sub = clinical_df.ix[y_df.index]
 
 # Summary heatmap of mutation counts
@@ -277,12 +321,14 @@ for tissue, metrics_val in tissue_metrics.items():
     met_train, met_test = metrics_val
     tissue_roc_sub_fh = tissue_roc_fh + '_pred_' + tissue + '.png'
     plt.figure()
+
     auroc = []
     for label, metrics in ('Training', met_train), ('Testing', met_test):
         roc_df = metrics['roc_df']
         auroc.append(metrics['auroc'])
         plt.plot(roc_df.fpr, roc_df.tpr,
                  label='{} (AUROC = {:.1%})'.format(label, metrics['auroc']))
+
     tissue_auroc[tissue] = auroc
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -311,7 +357,7 @@ coef_df.to_csv(classifier_fh, sep='\t')
 
 # Apply classifier to predict alternative genes
 if alt_genes[0] is not 'None':
-    # Classifying NF1 mutations
+    # Classifying alt_gene mutations
     y_alt = pd.DataFrame(mutation_df[alt_genes])
 
     # Append tissue id
@@ -321,20 +367,33 @@ if alt_genes[0] is not 'None':
     mut_co = y_alt.groupby('disease').sum().sum(axis=1).sort_index()
     prop = mut_co.divide(y_alt.disease.value_counts(sort=False).sort_index())
 
-    filter_tissue = (mut_co > filter_count) & (prop > filter_prop)
-    tissues = filter_tissue.index[filter_tissue].tolist()
+    if alt_tissues[0] == 'Auto':
+        filter_tissue = (mut_co > alt_filter_count) & (prop > alt_filter_prop)
+        alt_tissues = filter_tissue.index[filter_tissue].tolist()
 
     # Subset data
-    y_alt_df = y_alt[y_alt.disease.isin(tissues)].max(axis=1)
-    x_alt_df = rnaseq_df.ix[coef_df.index, y_alt_df.index].T
+    y_alt_df = y_alt[y_alt.disease.isin(alt_tissues)].max(axis=1)
+    x_alt_df = rnaseq_df.ix[y_alt_df.index, coef_df.index]
     clin_sub = clinical_df.ix[y_alt_df.index]
 
+    # Fit optimal classifier
+    best_clf = best_clf.fit(x_train[coef_df.index], y_train)
+
     validation_metrics = {}
-    for tissue in tissues:
-        sample_sub = clin_sub[clin_sub['acronym'] == tissue].index.values
-        y_sub = y_alt_df[sample_sub]
-        x_sub = x_alt_df.ix[sample_sub]
-        y_pred_nf1 = best_clf.predict(x_sub)
+    for tissue in alt_tissues:
+        sample_tissues = clin_sub[clin_sub['acronym'] == tissue].index.values
+
+        # Subset full data if it has not been trained on
+        if tissue not in tissues:
+            y_sub = y_alt_df[sample_tissues]
+            x_sub = x_alt_df.ix[sample_tissues]
+
+        # Only subset to the holdout set if data was trained on
+        else:
+            x_sub = x_test.ix[x_test.index.isin(sample_tissues), coef_df.index]
+            y_sub = y_test[y_test.index.isin(sample_tissues)]
+
+        y_pred_nf1 = best_clf.decision_function(x_sub)
         alt_metrics = get_threshold_metrics(y_sub, y_pred_nf1, tissue=tissue)
         validation_metrics[tissue] = alt_metrics
 

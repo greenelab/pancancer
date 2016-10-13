@@ -25,6 +25,7 @@ To run the entire pipeline enter the following in the command line:
 
 ```sh
 # Login to synapse to download controlled-access data
+# Note, publicly available Xena data is also available for download
 synapse login
 
 # Create and activate conda environment
@@ -35,5 +36,26 @@ source activate pancancer-classifier
 ./run_pipeline.sh
 ```
 
-This will output summary statistics and reproduce the analysis for a pancancer RAS
-classifier performance in identifying NF1 inactivated Glioblastoma
+For custom analyses, use the `pancancer_classifier.py` script with command line
+arguments.
+
+```
+python pancancer_classifier.py ...
+```
+
+| Flag | Abbreviation | Required | Description |
+| :--: | :----------: | :------: | ----------- |
+| `genes` | `-g` | yes |  Build a classifier for the input gene symbols |
+| `tissues` | `-t` |  | The tissues to use in building the classifier |
+| `drop` | `-d` | | Decision to drop input genes from expression matrix |
+| `filter_count` | `-c` |  | Default options to filter tissues if none are specified |
+| `filter_prop` | `-p` |  | Default options to filter tissues if none are specified |
+| `num_features` | `-f` |  | Number of MAD genes used to build classifier |
+| `alphas` | `-a` |  | The alphas to search over in parameter sweep |
+| `l1_ratios` | `-l` |  | The l1 ratios to search over in parameter sweep |
+| `alt_genes` | `-b` |  | Alternative genes to test classifier performance |
+| `alt_tissues` | `-s` |  | Alternative tissues to test classifier performance |
+| `alt_tissue_count` | `-i` |  | Filtering used for alternative tissue classification |
+| `alt_filter_prop` | `-r` |  | Filtering used for alternative tissue classification |
+| `xena` | `-x` |  | If present, use publicly available data for building classifier |
+
