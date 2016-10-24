@@ -44,18 +44,25 @@ python pancancer_classifier.py \
         --genes 'NF1,KRAS,NRAS,HRAS' \
         --alt_genes 'NF1'
 
+# Analysis 6 - PanCancer NF1/RAS combined classifier with integrated CNV
+python pancancer_classifier.py \
+        --genes 'NF1,KRAS,NRAS,HRAS' \
+        --alt_genes 'NF1' \
+        --drop \
+        --copy_number
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Analyses using UCSC Xena Data
 # The flag "--xena" will use publicly available data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Analysis 6 - PanCancer NF1 classifier using UCSC Xena Data
+# Analysis 7 - PanCancer NF1 classifier using UCSC Xena Data
 python pancancer_classifier.py \
         --genes 'NF1' \
         --tissues 'BRCA,GBM,LGG,LUSC,BLCA,COAD,HNSC,LUAD,PCPG,SKCM' \
         --xena
 
-# Analysis 7 - PanCancer NF1/RAS combined classifier using UCSC Xena Data
+# Analysis 8 - PanCancer NF1/RAS combined classifier using UCSC Xena Data
 python pancancer_classifier.py \
         --genes 'NF1,KRAS,NRAS,HRAS' \
         --alt_genes 'NF1' \
@@ -63,7 +70,7 @@ python pancancer_classifier.py \
         --alt_filter_prop '0.05' \
         --xena
 
-# Analysis 8 - PanCancer NF1/RAS classifier predicts GBM NF1 with preselected tissues
+# Analysis 9 - PanCancer NF1/RAS classifier predicts GBM NF1 with preselected tissues
 python pancancer_classifier.py \
         --genes 'KRAS,HRAS,NRAS,NF1' \
         --tissues 'CESC,LAML,PAAD,READ,TGCT,THCA,BRCA,LGG,LUSC,BLCA,COAD,HNSC,LUAD,PCPG' \
