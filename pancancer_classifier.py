@@ -335,7 +335,7 @@ metrics_cv = get_threshold_metrics(y_train, y_cv)
 
 # Plot ROC
 sns.set_style("whitegrid")
-plt.figure(figsize=(3, 3))
+plt.figure(figsize=(2.7, 2.4))
 total_auroc = {}
 colors = ['blue', 'green', 'orange']
 idx = 0
@@ -354,8 +354,8 @@ plt.xlabel('False Positive Rate', fontsize=8)
 plt.ylabel('True Positive Rate', fontsize=8)
 plt.title('')
 plt.tick_params(labelsize=8)
-plt.legend(bbox_to_anchor=(0.2, -0.5, 1., .202), loc=0, borderaxespad=0.,
-           fontsize=10)
+plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
+           fontsize=7.5)
 plt.tight_layout()
 plt.savefig(full_roc_file, dpi=600, bbox_inches='tight')
 plt.close()
@@ -386,11 +386,11 @@ for tissue, metrics_val in tissue_metrics.items():
     met_train, met_test, met_cv = metrics_val
     tissue_roc_sub_file = '{}_pred_{}.pdf'.format(tissue_roc_file, tissue)
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(2.7, 2.4))
     auroc = []
     idx = 0
     for label, metrics in [('Training', met_train), ('Testing', met_test),
-                           ('Cross Validation', met_cv)]:
+                           ('CV', met_cv)]:
         roc_df = metrics['roc_df']
         plt.plot(roc_df.fpr, roc_df.tpr,
                  label='{} (AUROC = {:.1%})'.format(label, metrics['auroc']),
@@ -405,8 +405,8 @@ for tissue, metrics_val in tissue_metrics.items():
     plt.ylabel('True Positive Rate', fontsize=8)
     plt.title('')
     plt.tick_params(labelsize=8)
-    plt.legend(bbox_to_anchor=(0.2, -0.5, 1., .202), loc=0, borderaxespad=0.,
-               fontsize=10)
+    plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
+               fontsize=7.5)
     plt.tight_layout()
     plt.savefig(tissue_roc_sub_file, dpi=600, bbox_inches='tight')
     plt.close()

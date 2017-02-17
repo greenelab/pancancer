@@ -38,14 +38,15 @@ parser.add_argument('-l', '--l1_ratios', default='0,0.1,0.15,0.18,0.2,0.3',
                     help='the l1 ratios for parameter sweep')
 parser.add_argument('-v', '--remove_hyper', action='store_true',
                     help='Remove hypermutated samples')
-parser.add_argument('-f', '--folder', default='Auto', help='location to save')
+parser.add_argument('-f', '--alt_folder', default='Auto',
+                    help='location to save')
 
 args = parser.parse_args()
 
 # Load command arguments
 genes = args.genes
 diseases = args.diseases.split(',')
-folder = args.folder
+folder = args.alt_folder
 alphas = args.alphas
 l1_ratios = args.l1_ratios
 remove_hyper = args.remove_hyper
