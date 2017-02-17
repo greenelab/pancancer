@@ -2,25 +2,26 @@
 
 mkdir -p 'data/raw/'
 
-# Download synapse data - must be approved user:
+# Download synapse data from Data Freeze Version 1.3
 # https://www.synapse.org/#!Synapse:syn4557014
+# Must be an approved Synapse user
 
-# Normalized RNAseq data
+# Normalized RNAseq data (version 3 - modified on 2016-03-24)
 synapse get syn4976369
 mv EB++AdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv \
 data/raw/pancan_normalized_rnaseq.tsv
 
-# Clinical data
-synapse get syn4983466
-mv clinical_PANCAN_patient_with_followup.tsv data/raw/pancan_clinical.tsv
+# Clinical sample freeze info (downloaded 11 Jan 2017)
+# Google doc located here
+# https://docs.google.com/spreadsheets/d/1Z1H3mXdO_sk9nc0v8df7VNS_XzXiu6vKGJRbK1qYoh4/edit?usp=gmail
 
-# Mutation data
-synapse get syn6140557
-gunzip pancan.merged.v0.2.4.filtered.maf.gz
-mv pancan.merged.v0.2.4.filtered.maf data/raw/pancan_mutation.maf
+# MC3 Mutation data (Must be TCGA Jamboree User - NIHEXT)
+# Accessible throgh sftp with USER@tcgaftps.nci.nih.gov
+# /tcgajamboree/mc3/mc3.v0.2.8.PUBLIC.maf.gz
 
-# Copy Number data
-synapse get syn5049514
-synapse get syn5049520  # Thresholded gain/loss calls
-mv all_data_by_genes_whitelisted.tsv data/raw/pancan_GISTIC.tsv
+# Copy Number data - Thresholded gain/loss calls (Version 1)
+synapse get syn5049520
 mv all_thresholded.by_genes_whitelisted.tsv data/raw/pancan_GISTIC_threshold.tsv
+
+# Check md5sums of downloaded files
+md5sum -c md5sums.txt

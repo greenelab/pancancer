@@ -16,7 +16,7 @@ copy_thresh_df = pd.read_table('data/raw/pancan_GISTIC_threshold.tsv',
                                index_col=0)
 
 copy_thresh_df.drop(['Locus ID', 'Cytoband'], axis=1, inplace=True)
-copy_thresh_df.columns = copy_thresh_df.columns.str[0:12]
+copy_thresh_df.columns = copy_thresh_df.columns.str[0:15]
 
 # Thresholded copy number includes 5 values [-2, -1, 0, 1, 2], which correspond
 # to "deep loss", "moderate loss", "no change", "moderate gain", and "deep

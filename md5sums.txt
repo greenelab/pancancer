@@ -1,0 +1,3 @@
+02e72c33071307ff6570621480d3c90b  data/raw/pancan_normalized_rnaseq.tsv
+6d983890c5693a556621142eead3d3bb  data/raw/pancan_GISTIC_threshold.tsv
+91f16c866b069a0b607638fdb0f111de  data/raw/mc3.v0.2.8.PUBLIC.maf

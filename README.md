@@ -6,17 +6,18 @@
 
 We have previously described the ability of a machine learning classifier to
 detect an NF1 inactivation signature using Glioblastoma data
-([Way _et al._ 2016](http://doi.org/10.1101/075382)). We applied an ensemble
-of logistic regression classifiers to the problem, but the solutions were
+([Way _et al._ 2016](http://doi.org/10.1186/s12864-017-3519-7)). We applied an
+ensemble of logistic regression classifiers to the problem, but the solutions were
 unstable and overfit. To address these issues, we posited that we could leverage
 data from diverse tissue-types to build a pancancer NF1 classifier. We also
-predicted that an NF1/RAS classifier would better key in on NF1 inactivation
+predicted that an RAS classifier would be able to detect tumors NF1 inactivation
 since NF1 directly inhibits RAS activity and there are many more examples of
 samples with RAS mutations.
 
 The code in this repository is flexible and can build a Pan-Cancer classifier
 for any combination of genes and cancer types using gene expression, mutation,
-and copy number data.
+and copy number data. Currently, we build classifiers to detect NF1/RAS
+aberration and TP53 inactivation.
 
 ## Controlled Access Data
 
@@ -24,9 +25,12 @@ All data used in this analysis are under controlled access by the The National
 Institutes of Health (NIH) and The Cancer Genome Atlas (TCGA). All data are
 downloaded from [synapse](http://synapse.org), which requires login and access
 credentials. To request access contact _SynapseInfo@sagebase.org_ for specific
-details and instructions.
+details and instructions. Additionally, the mutation data requires a TCGA
+Jamboree and an eRA commons account.
 
-## Publicly Available Data
+Eventually, all of the controlled access data used in this pipeline will be
+made public. **We will update this database when the data is officially
+released.**
 
 We also provide the ability to build classifiers using publicly available
 data retrieved from [UCSC Xena](xena.ucsc.ecu).
