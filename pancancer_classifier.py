@@ -33,7 +33,6 @@ ROC curves, AUROC across tissues, and classifier coefficients
 import os
 import warnings
 
-import numpy as np
 import pandas as pd
 import csv
 import argparse
@@ -43,12 +42,11 @@ import seaborn as sns
 from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV, \
                                     cross_val_predict
-from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from statsmodels.robust.scale import mad
 
-from tcga_util import integrage_copy_number
+from tcga_util import get_threshold_metrics, integrage_copy_number
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-g', '--genes',
@@ -109,67 +107,10 @@ remove_hyper = args.remove_hyper
 warnings.filterwarnings('ignore',
                         message='Changing the shape of non-C contiguous array')
 
-
-def fs_mad(x, y):
-    """
-    Get the median absolute deviation (MAD) for each column of x. The function
-    is input as the 'score_func' in sklearn.feature_selection.SelectKBest()
-
-    Arguments:
-    x - pandas DataFrame of gene expression values (samples by genes)
-    y - pandas Series of mutation outcomes (required by SelectKBest())
-
-    Output:
-    Per gene median absolute deviation and p values (according to SelectKBest)
-    """
-    scores = mad(x)
-    return scores, np.array([np.NaN]*len(scores))
-
-
-def grid_scores_to_df(grid_scores):
-    """
-    Convert a sklearn.grid_search.GridSearchCV.grid_scores_ attribute to
-    a tidy pandas DataFrame where each row is a hyperparam-fold combinatination
-
-    Arguments:
-    grid_scores - a list of named tuples with cross valiation results
-
-    Output:
-    pandas DataFrame of cross validation scores across each fold
-    """
-    rows = list()
-    for grid_score in grid_scores:
-        for fold, score in enumerate(grid_score.cv_validation_scores):
-            row = grid_score.parameters.copy()
-            row['fold'] = fold
-            row['score'] = score
-            rows.append(row)
-    df = pd.DataFrame(rows)
-    return df
-
-
-def get_threshold_metrics(y_true, y_pred, tissue='all'):
-    """
-    Retrieve true/false positive rates and auroc for classification predictions
-
-    Arguments:
-    y_true - an array of gold standard mutation status
-    y_pred - an array of predicted mutation status
-    tissue - a string that includes the corresponding TCGA study acronym
-
-    Output:
-    A dictionary storing AUROC, a pandas dataframe of ROC data, and tissue
-    """
-    roc_columns = ['fpr', 'tpr', 'threshold']
-    roc_items = zip(roc_columns, roc_curve(y_true, y_pred))
-    roc_df = pd.DataFrame.from_items(roc_items)
-    auroc = roc_auc_score(y_true, y_pred, average='weighted')
-    return {'auroc': auroc, 'roc_df': roc_df, 'tissue': tissue}
-
 # Generate file names for output
 base_add = 'synapse'
-base_folder = '{}__tissues_{}__genes_{}'.format(base_add,
-                                                args.diseases.replace(',', '_'),
+disease_foler = args.diseases.replace(',', '_')
+base_folder = '{}__tissues_{}__genes_{}'.format(base_add, disease_foler,
                                                 args.genes.replace(',', '_'))
 if drop:
     base_folder = '{}__drop_gene_input'.format(base_folder)

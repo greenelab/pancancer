@@ -21,7 +21,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from tcga_util import integrage_copy_number
+from tcga_util import integrate_copy_number
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--classifier',
@@ -83,7 +83,7 @@ if copy_number:
     # Load cancer gene classification table
     cancer_genes = pd.read_table(cancer_gene_file)
 
-    mut_subset_df = integrage_copy_number(y=mut_subset_df,
+    mut_subset_df = integrate_copy_number(y=mut_subset_df,
                                           cancer_genes_df=cancer_genes,
                                           genes=common_genes,
                                           loss_df=copy_loss_df,

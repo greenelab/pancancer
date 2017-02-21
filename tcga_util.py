@@ -7,7 +7,29 @@ Usage: For import only
 """
 
 
-def integrage_copy_number(y, cancer_genes_df, genes, loss_df, gain_df):
+def get_threshold_metrics(y_true, y_pred, tissue='all'):
+    """
+    Retrieve true/false positive rates and auroc for classification predictions
+
+    Arguments:
+    y_true - an array of gold standard mutation status
+    y_pred - an array of predicted mutation status
+    tissue - a string that includes the corresponding TCGA study acronym
+
+    Output:
+    A dictionary storing AUROC, a pandas dataframe of ROC data, and tissue
+    """
+    import pandas as pd
+    from sklearn.metrics import roc_auc_score, roc_curve
+
+    roc_columns = ['fpr', 'tpr', 'threshold']
+    roc_items = zip(roc_columns, roc_curve(y_true, y_pred))
+    roc_df = pd.DataFrame.from_items(roc_items)
+    auroc = roc_auc_score(y_true, y_pred, average='weighted')
+    return {'auroc': auroc, 'roc_df': roc_df, 'tissue': tissue}
+
+
+def integrate_copy_number(y, cancer_genes_df, genes, loss_df, gain_df):
     """
     Function to integrate copy number data to define gene activation or gene
     inactivation events. Copy number loss results in gene inactivation events
