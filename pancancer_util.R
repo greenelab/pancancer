@@ -1,0 +1,106 @@
+# Gregory Way 2017
+# PanCancer Classifier
+# pancancer_util.R
+#
+# Custom ggplot themes, function to extract info from a classifier summary
+# file, and several helper functions for plotting.
+#
+# Usage: sourced by scripts using function
+
+# ggplot2 themes to be used in various contexts
+base_theme <- ggplot2::theme(title = element_text(size = rel(0.6)),
+                             axis.title = element_text(size = rel(0.9)),
+                             axis.text.x = element_text(size = rel(0.7),
+                                                        vjust = 2),
+                             axis.text.y = element_text(size = rel(0.7)),
+                             axis.line.x = element_blank(),
+                             axis.line.y = element_blank(),
+                             axis.ticks = element_blank(),
+                             legend.text = element_text(size = rel(0.4)),
+                             legend.key = element_blank(),
+                             legend.key.size = unit(0.4, "lines"),
+                             legend.position = c(1.098, 0.7),
+                             panel.grid.major = element_line(color = "white",
+                                                             size = 0.3),
+                             panel.grid.minor = element_line(color = "white",
+                                                             size = 0.3),
+                             panel.background = element_rect(fill = "white"),
+                             plot.margin = unit(c(0.2, 1.5, 0, 0),"cm")) 
+
+within_theme <- theme(title = element_text(size = rel(0.7)),
+                      axis.text.x = element_text(angle = 90, size = rel(0.5)),
+                      axis.text.y = element_text(size = rel(0.5)),
+                      axis.title.x = element_blank(),
+                      axis.title.y = element_text(size = rel(0.7)),
+                      legend.position = 'right',
+                      plot.margin = unit(rep(0.1, 4), "cm"),
+                      legend.text = element_text(size = rel(0.45)),
+                      legend.key = element_blank(),
+                      legend.key.size = unit(2, "mm"), 
+                      strip.text.x = element_text(size = rel(1.0)),
+                      panel.grid.major = element_line(color = "gray",
+                                                      size = 0.3),
+                      panel.background = element_rect(fill = "white"))
+
+parse_summary <- function(summary_info) {
+  # Process classifier summary file
+  # Arguments:
+  #   summary_info: either a dataframe or string storing classifier info
+  # Output:
+  #    a list of summarized classifier attributes and performance
+
+  if (is.character(summary_info)) {
+    summary_info <- readr::read_lines(summary_info)
+  }
+  summary_list <- list()
+  dis_spec_perf <- c()
+  for (line in summary_info) {
+    line <- unlist(strsplit(line, "\t"))
+    if (is.na(line[1]) | (line[1] %in% c("Parameters:", "Results:",
+                                         "Disease specific performance:"))) {
+      next
+    }
+    if (line[1] == "Coefficients:") {
+      summary_list[[sub(":", "", line[1])]] <-
+        suppressMessages(readr::read_tsv(line[2]))
+    } else if  (line[1] == "") {
+      disease_info <- line[2:length(line)]
+      disease <- disease_info[1]
+      train <- disease_info[3]
+      test <- disease_info[5]
+      cv <- disease_info[7]
+      dis_spec_perf <- rbind(dis_spec_perf, c(disease, train, test, cv))
+    } else {
+      summary_list[[gsub(":", "", line[1])]] <- line[2:length(line)]
+    }
+  }
+  colnames(dis_spec_perf) <- c("disease", "training", "testing", "cv")
+  summary_list[["Disease specific performance"]] <- dis_spec_perf
+  return(summary_list)
+}
+
+add_arrow_label <- function(p, x, y, label, offset = c(0, 0, 0, 0)) {
+  # Add an arrow and label to a point in a plot
+  # Arguments:
+  #    p: a ggplot2 object to add annotations to
+  #    x: the x coordinate to place the text
+  #    y: the y coordinate to place the text
+  #    label: the feature of interest (string)
+  #    offset: how much to tweak the position of the arrows
+  # Output:
+  #    an update ggplot2 object
+
+  offset_x_point <- offset[1]
+  offset_y_point <- offset[2]
+  offset_x_label <- offset[3]
+  offset_y_label <- offset[4]
+  point <- coef_df[coef_df$feature == label, ]
+  x_point <- point$rank
+  y_point <- point$weight
+  p <- p + annotate("text", x = x, y = y, label = label, size = 2.2,
+                    fontface = "bold.italic") +
+    annotate("segment", x = x + offset_x_label, y = y + offset_y_label,
+             xend = x_point + offset_x_point, yend = y_point + offset_y_point,
+             size = 0.18, arrow = arrow(length = unit(0.05, "cm")))
+  return(p)
+}

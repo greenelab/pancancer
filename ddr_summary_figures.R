@@ -1,0 +1,220 @@
+# Gregory Way 2017
+# PanCancer Classifier
+# ddr_summary_figures.R
+#
+# Visualize summary for DNA Damage Repair/Response (DDR) classification scores
+#
+# Usage: Run by assigning where the within classifier summary is and where the
+#        Pan Cancer classifier summary is
+#
+#     Rscript --vanilla ddr_summary_figures.R
+#
+# Output:
+# Several figures to summarize DDR findings
+
+library(dplyr)
+library(pheatmap)
+library(ggplot2)
+source("pancancer_util.R")
+
+results <- parse_summary(file.path("classifiers", "TP53",
+                                   "classifier_summary.txt"))
+
+# 1) Heatmap of the distribution of aberrant events across tumors
+heat_df <- readr::read_tsv(file.path("tables",
+                                     "TP53_mutations_heatmap_data.csv"))
+prop_matrix <- as.matrix(heat_df[,c(3, 2)])
+rownames(prop_matrix) <- heat_df$DISEASE
+colnames(prop_matrix) <- c("Loss", "Mutation")
+
+# All diseases that are used in building the classifier
+tp53_dis <- results[["Tissues"]]
+
+# Build a vector for heatmap labels
+classifier <- c()
+for (disease in rownames(prop_matrix)) {
+  if (disease %in% tp53_dis) {
+    classifier <- c(classifier, "Training")
+  } else {
+    classifier <- c(classifier, "Dropped")
+  }
+}
+
+classifier <- data.frame(classifier)
+rownames(classifier) <- rownames(prop_matrix)
+classifier$classifier <- factor(classifier$classifier,
+                                levels = c("Training", "Dropped"))
+
+prop_matrix <- prop_matrix[names(sort(prop_matrix[,2], decreasing = TRUE)), ]
+
+# Plot and save heatmap
+pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
+         cluster_cols = FALSE,
+         display_numbers = TRUE, number_format = "%.0f", fontsize_number = 8,
+         number_color = "black", annotation_col = classifier,
+         annotation_names_col = FALSE, legend = FALSE,
+         filename = file.path("classifiers", "TP53", "figures",
+                              "tp53_summary_heatmap.pdf"),
+         width = 8, height = 2)
+
+# 2) Coefficients contributing to the model
+coef_df <- results[["Coefficients"]]
+coef_df <- coef_df[, -1]
+coef_df <- coef_df[order(coef_df$weight, decreasing = FALSE), ]
+coef_df$rank <- 1:nrow(coef_df)
+
+p <- ggplot(coef_df, aes(x = 1:nrow(coef_df), y = weight)) +
+  geom_point(aes(fill = "black"), size = 0.01) +
+  base_theme + theme(axis.line.x = element_line(),
+                     axis.line.y = element_line(),
+                     axis.ticks = element_line(),
+                     plot.margin = unit(c(0.25, 0.25, 0.1, 0.1),"cm")) +
+  labs(list(x = "Rank", y = "Weight")) +
+  scale_y_continuous(breaks = seq(-0.25, 0.25, 0.05)) +
+  scale_x_continuous(breaks = seq(0, 8000, 1000)) +
+  geom_segment(aes(x = 0, y = 0, yend = 0, xend = nrow(coef_df)),
+               colour = "red", linetype = "dashed", size = 0.2)
+
+p <- add_arrow_label(p = p, x = 650, y = -0.205, label = "AEN",
+                     offset = c(80, 0.001, -350, -.002))
+p <- add_arrow_label(p = p, x = 750, y = -0.190, label = "DDB2",
+                     offset = c(70, 0.001, -445, -.0002))
+p <- add_arrow_label(p = p, x = 1080, y = -0.172, label = "RPS27L",
+                     offset = c(60, 0.001, -610, .0003))
+p <- add_arrow_label(p = p, x = 950, y = -0.155, label = "MDM2",
+                     offset = c(50, -0.0001, -480, -.00013))
+p <- add_arrow_label(p = p, x = 1300, y = -0.14, label = "CDKN1A",
+                     offset = c(90, -0.0001, -710, -.00015))
+p <- add_arrow_label(p = p, x = 1200, y = -0.12, label = "BAX",
+                offset = c(80, -0.0001, -340, .0002))
+p <- add_arrow_label(p = p, x = 1200, y = -0.09, label = "FDXR",
+                     offset = c(80, 0, -450, -.0002))
+p <- add_arrow_label(p = p, x = 1300, y = -0.07, label = "XPC",
+                     offset = c(80, 0, -400, -.0002))
+p <- add_arrow_label(p = p, x = 1400, y = -0.055, label = "MPDU1",
+                     offset = c(80, 0, -600, -.0006))
+p <- add_arrow_label(p = p, x = 1500, y = -0.04, label = "CYB5D2",
+                     offset = c(80, 0, -650, -.0002))
+p <- add_arrow_label(p = p, x = 7200, y = 0.1, label = "RNF26",
+                     offset = c(-50, .001, 450, -.006))
+p <- add_arrow_label(p = p, x = 6900, y = 0.085, label = "KIF1B",
+                     offset = c(-50, .0006, 360, -.006))
+p <- add_arrow_label(p = p, x = 6600, y = 0.07, label = "EEPD1",
+                     offset = c(-50, .0004, 560, -.0015))
+p <- add_arrow_label(p = p, x = 6250, y = 0.054, label = "TTK",
+                     offset = c(-50, .0004, 350, -.0015))
+p <- add_arrow_label(p = p, x = 5950, y = 0.036, label = "CDC123",
+                     offset = c(-50, .0004, 690, -.0015))
+p <- add_arrow_label(p = p, x = 5550, y = 0.021, label = "RNF114",
+                     offset = c(-50, .0004, 690, -.0015))
+p <- add_arrow_label(p = p, x = 6950, y = 0.012, label = "ZNF259",
+                     offset = c(-50, -.001, 470, .0055))
+p <- add_arrow_label(p = p, x = 6250, y = -0.03, label = "Silent per Mb",
+                     offset = c(-50, -.004, 800, .008))
+ggsave(file = file.path("classifiers", "TP53", "figures",
+                        "ddr_coefficient_plot_v2.pdf"), plot = p,
+       height = 2.5, width = 2.75, dpi = 600)
+
+# 3) Plot distributions of predictions according to variant classification
+mut_df <- readr::read_tsv(file.path("classifiers", "TP53", "tables",
+                                    "mutation_classification_scores.tsv"))
+mut_df <- mut_df[, -1]
+colnames(mut_df)[2] <- "index"
+
+consider_mutations <- c("3'UTR", "5'UTR", "Intron", "Frame_Shift_Del",
+                        "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins",
+                        "Missense_Mutation", "Nonsense_Mutation",
+                        "Nonstop_Mutation", "RNA", "Splice_Site")
+
+silent_df <- mut_df %>% filter(Variant_Classification == "Silent") %>%
+  filter(total_status == 0)
+delet_df <- mut_df %>% filter(Variant_Classification %in% consider_mutations)
+mut_filtered_df <- dplyr::bind_rows(delet_df, silent_df)
+
+# Separate classes of mutations to summarize
+copy_num_df <- mut_df %>% filter(TP53_loss == 1) %>%
+  filter(TP53 == 0) %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "Loss")
+missense_df <- mut_filtered_df %>%
+  filter(Variant_Classification == "Missense_Mutation") %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "Missense")
+nonsense_df <- mut_filtered_df %>%
+  filter(Variant_Classification == "Nonsense_Mutation") %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "Nonsense")
+indel_df <- mut_filtered_df %>% filter(Variant_Classification %in%
+                                         c("Frame_Shift_Del", "Frame_Shift_Ins",
+                                           "In_Frame_Del", "In_Frame_Ins")) %>%
+  filter(!(index %in% c(missense_df$index, nonsense_df$index))) %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "Indel")
+utr_df <- mut_filtered_df %>%
+  filter(Variant_Classification %in% c("3'UTR", "5'UTR", "Intron")) %>%
+  filter(!(index %in% c(missense_df$index, nonsense_df$index))) %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "UTR")
+silent_df <- silent_df %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "Silent")
+splice_df <- mut_filtered_df %>%
+  filter(Variant_Classification == "Splice_Site") %>%
+  filter(!(index %in% c(missense_df$index, nonsense_df$index))) %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "Splice")
+wt_df <- mut_df %>% subset(total_status == 0) %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "WT")
+hyper_df <- mut_df %>%
+  filter(hypermutated == 1) %>%
+  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  mutate(classification = "Hyper")
+
+final_df <- dplyr::bind_rows(list(missense_df, nonsense_df, indel_df, utr_df,
+                                  splice_df, silent_df, copy_num_df, wt_df,
+                                  hyper_df))
+
+colnames(final_df) <- c("ID", "Disease", "Weight", "HGVSc", "HGVSp", "Class")
+
+# Plot summary distribution of variant classes prediction scores
+ggplot(final_df, aes(Weight, ..count.., fill = Class)) +
+  geom_density(position = "fill", size = 0.1) +
+  geom_segment(aes(x = 0.5, y = 0, yend = 1, xend = 0.5), colour = "black",
+               linetype = "dashed", size = 0.4) +
+  labs(list(x = "Probability", y = "Proportion")) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 1)) +
+  scale_y_continuous(expand = c(0, 0)) + base_theme +
+  theme(legend.position = c(1.1, 0.65),
+        legend.background = element_rect(fill = alpha('white', 0)),
+        legend.text = element_text(size = 7),
+        plot.margin = unit(c(0.2, 1.5, 0, 0.1),"cm"),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 9),
+        axis.title = element_text(size = 12))
+ggsave(file.path("classifiers", "TP53", "figures", "variant_fill_map_v2.pdf"),
+       width = 4, height = 3.8, dpi = 600)
+
+# 4) Show mutation frequencies and scores
+mut_weight_df <- mut_filtered_df %>% filter(!is.na(weight))
+aa_df <- mut_weight_df %>%
+  group_by(HGVSp, Variant_Classification) %>%
+  summarise(Mean = mean(weight),
+            low_CI = quantile(weight, 0.05),
+            high_CI = quantile(weight, 0.95),
+            count = n())
+nuc_df <- mut_weight_df %>%
+  group_by(HGVSc, Variant_Classification) %>%
+  summarise(Mean = mean(weight),
+            low_CI = quantile(weight, 0.05),
+            high_CI = quantile(weight, 0.95),
+            count = n())
+
+aa_df <- aa_df[order(aa_df$count, decreasing = TRUE),]
+nuc_df <- nuc_df[order(nuc_df$count, decreasing = TRUE),]
+write.table(aa_df, file = file.path('classifiers', 'TP53', 'tables',
+                                    'amino_acid_mutation_scores.tsv'),
+            sep = '\t', row.names = FALSE)
+write.table(nuc_df, file = file.path('classifiers', 'TP53', 'tables',
+                                     'nucleotide_mutation_scores.tsv'),
+            sep = '\t', row.names = FALSE)
