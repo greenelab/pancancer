@@ -7,14 +7,14 @@ Usage: For import only
 """
 
 
-def get_threshold_metrics(y_true, y_pred, tissue='all'):
+def get_threshold_metrics(y_true, y_pred, disease='all'):
     """
     Retrieve true/false positive rates and auroc for classification predictions
 
     Arguments:
     y_true - an array of gold standard mutation status
     y_pred - an array of predicted mutation status
-    tissue - a string that includes the corresponding TCGA study acronym
+    disease - a string that includes the corresponding TCGA study acronym
 
     Output:
     A dictionary storing AUROC, a pandas dataframe of ROC data, and tissue
@@ -26,7 +26,7 @@ def get_threshold_metrics(y_true, y_pred, tissue='all'):
     roc_items = zip(roc_columns, roc_curve(y_true, y_pred))
     roc_df = pd.DataFrame.from_items(roc_items)
     auroc = roc_auc_score(y_true, y_pred, average='weighted')
-    return {'auroc': auroc, 'roc_df': roc_df, 'tissue': tissue}
+    return {'auroc': auroc, 'roc_df': roc_df, 'disease': disease}
 
 
 def integrate_copy_number(y, cancer_genes_df, genes, loss_df, gain_df):
