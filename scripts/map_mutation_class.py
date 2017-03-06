@@ -1,7 +1,7 @@
 """
 Gregory Way 2017
 PanCancer Classifier
-map_mutation_class.py
+scripts/map_mutation_class.py
 
 Merge per sample classifier scores with mutation types present in each sample
 

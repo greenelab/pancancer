@@ -2,7 +2,7 @@
 Gregory Way 2017
 Heavily modified from https://github.com/cognoma/machine-learning/
 PanCancer Classifier
-pancancer_classifier.py
+scripts/pancancer_classifier.py
 
 Usage: Run in command line with required command argument:
 
@@ -31,6 +31,7 @@ ROC curves, AUROC across tissues, and classifier coefficients
 """
 
 import os
+import sys
 import warnings
 
 import pandas as pd
@@ -46,7 +47,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from statsmodels.robust.scale import mad
 
-from tcga_util import get_threshold_metrics, integrage_copy_number
+sys.path.insert(0, os.path.join('scripts', 'util'))
+from tcga_util import get_threshold_metrics, integrate_copy_number
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-g', '--genes',
@@ -175,7 +177,7 @@ if copy_number:
     cancer_genes = pd.read_table(os.path.join('data',
                                               'vogelstein_cancergenes.tsv'))
 
-    y = integrage_copy_number(y=y, cancer_genes_df=cancer_genes,
+    y = integrate_copy_number(y=y, cancer_genes_df=cancer_genes,
                               genes=common_genes, loss_df=copy_loss_df,
                               gain_df=copy_gain_df)
 
@@ -381,7 +383,7 @@ if alt_genes[0] is not 'None':
 
     # Add copy number info if applicable
     if copy_number:
-        y_alt = integrage_copy_number(y=y_alt, cancer_genes_df=cancer_genes,
+        y_alt = integrate_copy_number(y=y_alt, cancer_genes_df=cancer_genes,
                                       genes=alt_genes, loss_df=copy_loss_df,
                                       gain_df=copy_gain_df)
     # Append tissue id

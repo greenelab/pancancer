@@ -1,7 +1,7 @@
 """
 Gregory Way 2017
 PanCancer Classifier
-visualize_decisions.py
+scripts/visualize_decisions.py
 
 Usage: Run in command line with required command argument:
 

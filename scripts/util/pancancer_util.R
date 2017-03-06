@@ -7,6 +7,8 @@
 #
 # Usage: sourced by scripts using function
 
+library(ggplot2)
+
 # ggplot2 themes to be used in various contexts
 base_theme <- ggplot2::theme(title = element_text(size = rel(0.6)),
                              axis.title = element_text(size = rel(0.9)),

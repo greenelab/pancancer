@@ -1,6 +1,6 @@
 # Gregory Way 2017
 # PanCancer Classifier
-# compare_within_models.R
+# scripts/compare_within_models.R
 #
 # Plots pancancer classifier performance compared to within cancer
 #
@@ -13,7 +13,7 @@
 # Bar Plots for each comparison
 
 library(ggplot2)
-source("pancancer_util.R")
+source(file.path("scripts", "util", "pancancer_util.R"))
 
 option_list <- list(optparse::make_option(c("-w", "--within_dir"),
                                           type = "character",

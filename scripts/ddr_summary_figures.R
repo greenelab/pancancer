@@ -1,6 +1,6 @@
 # Gregory Way 2017
 # PanCancer Classifier
-# ddr_summary_figures.R
+# scripts/ddr_summary_figures.R
 #
 # Visualize summary for DNA Damage Repair/Response (DDR) classification scores
 #
@@ -15,7 +15,7 @@
 library(dplyr)
 library(pheatmap)
 library(ggplot2)
-source("pancancer_util.R")
+source(file.path("scripts", "util", "pancancer_util.R"))
 
 results <- parse_summary(file.path("classifiers", "TP53",
                                    "classifier_summary.txt"))

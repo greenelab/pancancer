@@ -1,7 +1,7 @@
 """
 Gregory Way 2017
 PanCancer NF1/RAS Classifier
-within_tissue_analysis.py
+scripts/within_tissue_analysis.py
 
 Usage: Run in command line
 
@@ -68,9 +68,9 @@ for acronym in disease_types:
         alt_folder = os.path.join(base_folder, acronym)
     else:
         alt_folder = os.path.join(folder, acronym)
-    command = ['python', 'pancancer_classifier.py', '--genes', genes,
-               '--diseases', acronym, '--drop', '--copy_number',
-               '--alphas', alphas, '--l1_ratios', l1_ratios,
+    command = ['python', os.path.join('scripts', 'pancancer_classifier.py'),
+               '--genes', genes, '--diseases', acronym, '--drop',
+               '--copy_number', '--alphas', alphas, '--l1_ratios', l1_ratios,
                '--alt_folder', alt_folder]
     if remove_hyper:
         command += ['--remove_hyper']

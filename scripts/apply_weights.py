@@ -1,7 +1,7 @@
 """
 Gregory Way 2017
 PanCancer Classifier
-apply_weights.py
+scripts/apply_weights.py
 
 Usage: Run in command line with required command argument:
 
@@ -16,11 +16,13 @@ Output:
 """
 
 import os
+import sys
 import argparse
 import warnings
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+sys.path.insert(0, os.path.join('scripts', 'util'))
 from tcga_util import integrate_copy_number
 
 parser = argparse.ArgumentParser()
@@ -130,10 +132,10 @@ final_pred = final_pred.merge(mut_subset_df.drop('total_status', axis=1),
                               left_index=True, right_index=True)
 
 # Add information (hypermutated samples and if they were used to train model)
-final_pred = final_pred.assign(include=0)
 final_pred = final_pred.assign(hypermutated=1)
-final_pred.loc[(final_pred.cohort.isin(diseases)) &
-               (final_pred.hypermutated == 0), 'include'] = 1
 final_pred.loc[final_pred['Silent per Mb'] < 2 *
                final_pred['Silent per Mb'].std(), 'hypermutated'] = 0
+final_pred = final_pred.assign(include=0)
+final_pred.loc[(final_pred.cohort.isin(diseases)) &
+               (final_pred.hypermutated == 0), 'include'] = 1
 final_pred.to_csv(output_dec_file, sep='\t')

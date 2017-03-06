@@ -1,7 +1,7 @@
 """
 Gregory Way 2017
 PanCancer Classifier
-build_heatmap_data.py
+scripts/build_heatmap_data.py
 
 Usage: Run in command line with required command argument:
 
@@ -18,10 +18,12 @@ Output:
 """
 
 import os
+import sys
 import warnings
 import pandas as pd
 import argparse
-from tcga_util import integrage_copy_number
+sys.path.insert(0, os.path.join('scripts', 'util'))
+from tcga_util import integrate_copy_number
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-g', '--genes',
@@ -85,7 +87,7 @@ if copy_number:
     # Load cancer gene classification table
     cancer_genes = pd.read_table(cancer_gene_file)
 
-    y = integrage_copy_number(y=y, cancer_genes_df=cancer_genes,
+    y = integrate_copy_number(y=y, cancer_genes_df=cancer_genes,
                               genes=common_genes, loss_df=copy_loss_df,
                               gain_df=copy_gain_df)
 
