@@ -61,7 +61,7 @@ with open(classifier_file) as class_fh:
         line = line.strip().split('\t')
         if line[0] == 'Genes:':
             genes = line[1:]
-        if line[0] == 'Tissues:':
+        if line[0] == 'Diseases:':
             diseases = line[1:]
         if line[0] == 'Coefficients:':
             coef_df = pd.read_table(line[1])

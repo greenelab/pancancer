@@ -26,14 +26,10 @@ python scripts/within_tissue_analysis.py --genes 'TP53' \
         --alt_folder $tp53_dir'/within_disease' \
         --alphas $alphas --l1_ratios $l1_mixing
 
-# 3. Prepare heatmap figure describing TP53 mutations across the set
-python scripts/build_heatmap_data.py --genes 'TP53' --copy_number \
-        --remove_hyper --alt_folder $tp53_dir
-
-# 4. Apply PanCan classifier to all samples and output scores for each sample
+# 3. Apply PanCan classifier to all samples and output scores for each sample
 python scripts/apply_weights.py --classifier $tp53_dir --copy_number
 
-# 5. Summarize and visualize performance of classifiers
+# 4. Summarize and visualize performance of classifiers
 python scripts/visualize_decisions.py --scores $tp53_dir --custom 'TP53_loss'
 python scripts/map_mutation_class.py --scores $tp53_dir --genes 'TP53'
 Rscript --vanilla scripts/ddr_summary_figures.R

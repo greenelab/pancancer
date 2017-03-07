@@ -17,18 +17,19 @@ library(pheatmap)
 library(ggplot2)
 source(file.path("scripts", "util", "pancancer_util.R"))
 
-results <- parse_summary(file.path("classifiers", "TP53",
-                                   "classifier_summary.txt"))
+results_folder <- file.path("classifiers", "TP53")
+results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
 
 # 1) Heatmap of the distribution of aberrant events across tumors
-heat_df <- readr::read_tsv(file.path("tables",
-                                     "TP53_mutations_heatmap_data.csv"))
-prop_matrix <- as.matrix(heat_df[,c(3, 2)])
+heat_file <- file.path(results_folder, "summary_counts.csv")
+heat_df <- readr::read_csv(heat_file)
+
+prop_matrix <- as.matrix(heat_df[, c('TP53_loss_y', 'TP53_y')])
 rownames(prop_matrix) <- heat_df$DISEASE
 colnames(prop_matrix) <- c("Loss", "Mutation")
 
 # All diseases that are used in building the classifier
-tp53_dis <- results[["Tissues"]]
+tp53_dis <- results[["Diseases"]]
 
 # Build a vector for heatmap labels
 classifier <- c()
@@ -53,8 +54,7 @@ pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
          display_numbers = TRUE, number_format = "%.0f", fontsize_number = 8,
          number_color = "black", annotation_col = classifier,
          annotation_names_col = FALSE, legend = FALSE,
-         filename = file.path("classifiers", "TP53", "figures",
-                              "tp53_summary_heatmap.pdf"),
+         filename = file.path(results_folder, "figures", "tp53_heatmap.pdf"),
          width = 8, height = 2)
 
 # 2) Coefficients contributing to the model
@@ -111,12 +111,11 @@ p <- add_arrow_label(p = p, x = 6950, y = 0.012, label = "ZNF259",
                      offset = c(-50, -.001, 470, .0055))
 p <- add_arrow_label(p = p, x = 6250, y = -0.03, label = "Silent per Mb",
                      offset = c(-50, -.004, 800, .008))
-ggsave(file = file.path("classifiers", "TP53", "figures",
-                        "ddr_coefficient_plot_v2.pdf"), plot = p,
-       height = 2.5, width = 2.75, dpi = 600)
+ggsave(file = file.path(results_folder, "figures", "ddr_coefficient_plot.pdf"),
+       plot = p, height = 2.5, width = 2.75, dpi = 600)
 
 # 3) Plot distributions of predictions according to variant classification
-mut_df <- readr::read_tsv(file.path("classifiers", "TP53", "tables",
+mut_df <- readr::read_tsv(file.path(results_folder, "tables",
                                     "mutation_classification_scores.tsv"))
 mut_df <- mut_df[, -1]
 colnames(mut_df)[2] <- "index"
@@ -145,8 +144,8 @@ nonsense_df <- mut_filtered_df %>%
   select(index, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Nonsense")
 indel_df <- mut_filtered_df %>% filter(Variant_Classification %in%
-                                         c("Frame_Shift_Del", "Frame_Shift_Ins",
-                                           "In_Frame_Del", "In_Frame_Ins")) %>%
+                                       c("Frame_Shift_Del", "Frame_Shift_Ins",
+                                         "In_Frame_Del", "In_Frame_Ins")) %>%
   filter(!(index %in% c(missense_df$index, nonsense_df$index))) %>%
   select(index, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Indel")
@@ -192,7 +191,7 @@ ggplot(final_df, aes(Weight, ..count.., fill = Class)) +
         axis.text.x = element_text(size = 9),
         axis.text.y = element_text(size = 9),
         axis.title = element_text(size = 12))
-ggsave(file.path("classifiers", "TP53", "figures", "variant_fill_map_v2.pdf"),
+ggsave(file.path(results_folder, "figures", "variant_fill_map.pdf"),
        width = 4, height = 3.8, dpi = 600)
 
 # 4) Show mutation frequencies and scores
@@ -212,9 +211,9 @@ nuc_df <- mut_weight_df %>%
 
 aa_df <- aa_df[order(aa_df$count, decreasing = TRUE),]
 nuc_df <- nuc_df[order(nuc_df$count, decreasing = TRUE),]
-write.table(aa_df, file = file.path('classifiers', 'TP53', 'tables',
+write.table(aa_df, file = file.path(results_folder, 'tables',
                                     'amino_acid_mutation_scores.tsv'),
             sep = '\t', row.names = FALSE)
-write.table(nuc_df, file = file.path('classifiers', 'TP53', 'tables',
+write.table(nuc_df, file = file.path(results_folder, 'tables',
                                      'nucleotide_mutation_scores.tsv'),
             sep = '\t', row.names = FALSE)

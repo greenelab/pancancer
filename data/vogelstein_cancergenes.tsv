@@ -1,0 +1,126 @@
+Gene Symbol	Gene Name	# Mutated Tumor Samples**	Ocogene score* 	Tumor Suppressor Gene score* 	Classification*	Core pathway	Process
+ABL1	c-abl oncogene 1, receptor tyrosine kinase	851	0.9269035533	0.0030456853	Oncogene	Cell Cycle/Apoptosis	Cell Survival
+ACVR1B	activin A receptor, type IB	17	0	0.4230769231	TSG	TGF-b 	Cell Survival
+AKT1	v-akt murine thymoma viral oncogene homolog 1	155	0.9294871795	0.0064102564	Oncogene	PI3K	Cell Survival
+ALK	anaplastic lymphoma receptor tyrosine kinase	189	0.72	0.01	Oncogene	PI3K; RAS	Cell Survival
+APC	adenomatous polyposis coli	2561	0.0245527885	0.9172220274	TSG	APC	Cell Fate
+AR	androgen receptor	23	0.5365853659	0	Oncogene	Transcriptional Regulation	Cell Fate
+ARID1A	AT rich interactive domain 1A (SWI-like)	234	0.0141843972	0.8262411348	TSG	Chromatin Modification	Cell Fate
+ARID1B	AT rich interactive domain 1B (SWI1-like)	17	0	0.5	TSG	Chromatin Modification	Cell Fate
+ARID2	AT rich interactive domain 2 (ARID, RFX-like)	45	0	0.5625	TSG	Chromatin Modification	Cell Fate
+ASXL1	additional sex combs like 1 (Drosophila)	442	0.046460177	0.8672566372	TSG	Chromatin Modification	Cell Fate
+ATM	similar to Serine-protein kinase ATM (Ataxia telangiectasia mutated) (A-T, mutated); ataxia telangiectasia mutated	242	0.2446043165	0.2985611511	TSG	DNA Damage Control	Genome Maintenance
+ATRX	alpha thalassemia/mental retardation syndrome X-linked (RAD54 homolog, S. cerevisiae)	50	0.0350877193	0.4736842105	TSG	Chromatin Modification	Cell Fate
+AXIN1	axin 1	117	0.1988950276	0.270718232	TSG	APC	Cell Fate
+B2M	beta-2-microglobulin	30	0.1842105263	0.3947368421	TSG	PI3K; RAS; MAPK	Cell Survival
+BAP1	BRCA1 associated protein-1 (ubiquitin carboxy-terminal hydrolase)	99	0.0776699029	0.6990291262	TSG	DNA Damage Control	Genome Maintenance
+BCL2	B-cell CLL/lymphoma 2	45	0.2694610778	0.005988024	Oncogene	Cell Cycle/Apoptosis	Cell Survival
+BCOR	BCL6 co-repressor	21	0	0.6956521739	TSG	Transcriptional Regulation	Cell Fate
+BRAF	v-raf murine sarcoma viral oncogene homolog B1	24288	0.9955927362	0.000489696	Oncogene	RAS	Cell Survival
+BRCA1	breast cancer 1, early onset	62	0	0.6935483871	TSG	DNA Damage Control	Genome Maintenance
+BRCA2	breast cancer 2, early onset	67	0	0.3035714286	TSG	DNA Damage Control	Genome Maintenance
+CARD11	caspase recruitment domain family, member 11	74	0.3	0.0125	Oncogene	Cell Cycle/Apoptosis	Cell Survival
+CASP8	caspase 8, apoptosis-related cysteine peptidase	21	0	0.5161290323	TSG	Cell Cycle/Apoptosis	Cell Survival
+CBL	Cas-Br-M (murine) ecotropic retroviral transforming sequence	168	0.5681818182	0.0852272727	Oncogene	PI3K; RAS	Cell Survival
+CDC73	cell division cycle 73, Paf1/RNA polymerase II complex component, homolog (S. cerevisiae)	45	0.04	0.78	TSG	Cell Cycle/Apoptosis	Cell Survival
+CDH1	cadherin 1, type 1, E-cadherin (epithelial)	200	0.1355140187	0.523364486	TSG	APC	Cell Fate
+CDKN2A	cyclin-dependent kinase inhibitor 2A (melanoma, p16, inhibits CDK4)	968	0.3241758242	0.489010989	TSG	Cell Cycle/Apoptosis	Cell Survival
+CEBPA	CCAAT/enhancer binding protein (C/EBP), alpha	448	0.3024963289	0.5447870778	TSG	PI3K; RAS; MAPK	Cell Survival
+CIC	capicua homolog (Drosophila)	47	0.1176470588	0.3137254902	TSG	RAS	Cell Survival
+CREBBP	CREB binding protein	151	0.238372093	0.3430232558	TSG	Chromatin Modification; Transcriptional Regulation	Cell Fate
+CRLF2	cytokine receptor-like factor 2	10	1	0	Oncogene	STAT	Cell Survival
+CSF1R	colony stimulating factor 1 receptor	48	0.5	0.15	Oncogene	PI3K; RAS	Cell Survival
+CTNNB1	catenin (cadherin-associated protein), beta 1, 88kDa	3262	0.924084549	0.0086335219	Oncogene	APC	Cell Fate
+CYLD	cylindromatosis (turban tumor syndrome)	26	0	0.8518518519	TSG	Cell Cycle/Apoptosis	Cell Survival
+DAXX	death-domain associated protein	28	0.0714285714	0.6071428571	TSG	Chromatin Modification; Cell Cycle/Apoptosis	Cell Fate
+DNMT1	DNA (cytosine-5-)-methyltransferase 1	22	0.3636363636	0.0454545455	Oncogene	Chromatin Modification	Cell Fate
+DNMT3A	DNA (cytosine-5-)-methyltransferase 3 alpha	788	0.737037037	0.1197530864	Oncogene	Chromatin Modification	Cell Fate
+EGFR	epidermal growth factor receptor (erythroblastic leukemia viral (v-erb-b) oncogene homolog, avian)	10628	0.9684468141	0.0011362643	Oncogene	PI3K; RAS	Cell Survival
+EP300	E1A binding protein p300	88	0.1157894737	0.3157894737	TSG	Chromatin Modification; APC; TGF-b; NOTCH	Cell Survival/Fate
+ERBB2	v-erb-b2 erythroblastic leukemia viral oncogene homolog 2, neuro/glioblastoma derived oncogene homolog (avian)	164	0.6705202312	0.0346820809	Oncogene	PI3K; RAS	Cell Survival
+EZH2	enhancer of zeste homolog 2 (Drosophila)	276	0.670694864	0.1238670695	Oncogene	Chromatin Modification	Cell Fate
+FAM123B	family with sequence similarity 123B	55	0.038961039	0.6623376623	TSG	APC	Cell Fate
+FBXW7	F-box and WD repeat domain containing 7	312	0.55	0.1760869565	TSG	NOTCH	Cell Fate
+FGFR2	fibroblast growth factor receptor 2	121	0.4926470588	0.0588235294	Oncogene	PI3K; RAS ; STAT	Cell Survival
+FGFR3	fibroblast growth factor receptor 3	2948	0.9870732516	0.0013258204	Oncogene	PI3K; RAS ; STAT	Cell Survival
+FLT3	fms-related tyrosine kinase 3	11520	0.9786869811	0.0003423778	Oncogene	RAS; PI3K; STAT	Cell Survival
+FOXL2	forkhead box L2	330	0.996978852	0	Oncogene	TGF-b 	Cell Fate
+FUBP1	far upstream element (FUSE) binding protein 1	9	0	0.7	TSG	Cell Cycle/Apoptosis	Cell Survival
+GATA1	GATA binding protein 1 (globin transcription factor 1)	203	0.0817307692	0.8365384615	TSG	NOTCH, TGF-b 	Cell Fate
+GATA2	GATA binding protein 2	45	0.5319148936	0.0425531915	Oncogene	NOTCH, TGF-b 	Cell Fate
+GATA3	GATA binding protein 3	33	0.0857142857	0.6571428571	TSG	Transcriptional Regulation	Cell Fate
+GNA11	guanine nucleotide binding protein (G protein), alpha 11 (Gq class)	110	0.9189189189	0.009009009	Oncogene	PI3K; RAS; MAPK	Cell Survival
+GNAQ	guanine nucleotide binding protein (G protein), q polypeptide	245	0.951417004	0.008097166	Oncogene	PI3K;RAS; MAPK	Cell Survival
+GNAS	GNAS complex locus	422	0.9260089686	0.0156950673	Oncogene	APC; PI3K; TGF-b, RAS	Cell Survival/Cell Fate
+H3F3A	H3 histone, family 3B (H3.3B); H3 histone, family 3A pseudogene; H3 histone, family 3A; similar to H3 histone, family 3B; similar to histone H3.3B	122	0.9260089686	0	Oncogene	Chromatin Modification	Cell Fate
+HIST1H3B	histone cluster 1, H3j; histone cluster 1, H3i; histone cluster 1, H3h; histone cluster 1, H3g; histone cluster 1, H3f; histone cluster 1, H3e; histone cluster 1, H3d; histone cluster 1, H3c; histone cluster 1, H3b; histone cluster 1, H3a; histone cluster 1, H2ad; histone cluster 2, H3a; histone cluster 2, H3c; histone cluster 2, H3d	25	0.6	0	Oncogene	Chromatin Modification	Cell Fate
+HNF1A	HNF1 homeobox A	126	0.291005291	0.5502645503	TSG	APC	Cell Fate
+HRAS	v-Ha-ras Harvey rat sarcoma viral oncogene homolog	812	0.9624413146	0.0023474178	Oncogene	RAS	Cell Survival
+IDH1	isocitrate dehydrogenase 1 (NADP+), soluble	4509	0.9969060773	0.0006629834	Oncogene	Chromatin Modification	Cell Fate
+IDH2	isocitrate dehydrogenase 2 (NADP+), mitochondrial	1029	0.9903100775	0.0019379845	Oncogene	Chromatin Modification	Cell Fate
+JAK1	Janus kinase 1	61	0.2602739726	0.1780821918	Oncogene	STAT	Cell Survival
+JAK2	Janus kinase 2	32692	0.9976158455	0.0002750948	Oncogene	STAT	Cell Survival
+JAK3	Janus kinase 3	89	0.5957446809	0.0638297872	Oncogene	STAT	Cell Survival
+KDM5C	lysine (K)-specific demethylase 5C	26	0	0.6153846154	TSG	Chromatin Modification	Cell Fate
+KDM6A	lysine (K)-specific demethylase 6A	66	0	0.7205882353	TSG	Chromatin Modification	Cell Fate
+KIT	similar to Mast/stem cell growth factor receptor precursor (SCFR) (Proto-oncogene tyrosine-protein kinase Kit) (c-kit) (CD117 antigen); v-kit Hardy-Zuckerman 4 feline sarcoma viral oncogene homolog	4720	0.9048559021	0.0043426767	Oncogene	PI3K; RAS; STAT	Cell Survival
+KLF4	Kruppel-like factor 4	61	0.8	0.04	Oncogene	Transcriptional Regulation; WNT	Cell Fate
+KRAS	v-Ki-ras2 Kirsten rat sarcoma viral oncogene homolog	23261	0.9976576878	0.000167308	Oncogene	RAS	Cell Survival
+MAP2K1	mitogen-activated protein kinase kinase 1	13	0.6666666667	0	Oncogene	RAS	Cell Survival
+MAP3K1	mitogen-activated protein kinase kinase kinase 1	11	0	0.625	TSG	RAS; MAPK	Cell Survival
+MED12	mediator complex subunit 12	337	0.8366197183	0.0028169014	Oncogene	Cell Cycle/Apoptosis; TGF-b 	Cell Survival
+MEN1	multiple endocrine neoplasia I	290	0.0666666667	0.6833333333	TSG	Chromatin Modification	Cell Fate
+MET	met proto-oncogene (hepatocyte growth factor receptor)	159	0.6117647059	0.0411764706	Oncogene	PI3K; RAS	Cell Survival
+MLH1	mutL homolog 1, colon cancer, nonpolyposis type 2 (E. coli)	61	0.1791044776	0.3731343284	TSG	DNA Damage Control	Genome Maintenance
+MLL2	myeloid/lymphoid or mixed-lineage leukemia 2	165	0.0060790274	0.6990881459	TSG	Chromatin Modification	Cell Fate
+MLL3	myeloid/lymphoid or mixed-lineage leukemia 3	111	0.0505050505	0.4444444444	TSG	Chromatin Modification	Cell Fate
+MPL	myeloproliferative leukemia virus oncogene	531	0.9594095941	0.0018450185	Oncogene	STAT	Cell SUrvival
+MSH2	mutS homolog 2, colon cancer, nonpolyposis type 1 (E. coli)	37	0	0.65	TSG	DNA Damage Control	Genome Maintenance
+MSH6	mutS homolog 6 (E. coli)	135	0.0263157895	0.6842105263	TSG	DNA Damage Control	Genome Maintenance
+MYD88	myeloid differentiation primary response gene (88)	134	0.9185185185	0.0074074074	Oncogene	Cell Cycle/Apoptosis	Cell Survival
+NCOR1	nuclear receptor co-repressor 1	35	0.1081081081	0.3243243243	TSG	Chromatin Modification	Cell Fate
+NF1	neurofibromin 1	362	0.0175	0.7275	TSG	RAS	Cell Survival
+NF2	neurofibromin 2 (merlin)	609	0.042721519	0.8860759494	TSG	APC	Cell Fate
+NFE2L2	nuclear factor (erythroid-derived 2)-like 2	102	0.7428571429	0.0095238095	Oncogene	Cell Cycle/Apoptosis	Cell Survival
+NOTCH1	Notch homolog 1, translocation-associated (Drosophila)	661	0.4395209581	0.2706586826	TSG	NOTCH	Cell Fate
+NOTCH2	Notch homolog 2 (Drosophila)	51	0	0.2698412698	TSG	NOTCH	Cell Fate
+NPM1	nucleophosmin 1 (nucleolar phosphoprotein B23, numatrin) pseudogene 21; hypothetical LOC100131044; similar to nucleophosmin 1; nucleophosmin (nucleolar phosphoprotein B23, numatrin)	2471	0.0177777778	0.981010101	TSG	Cell Cycle/Apoptosis	Cell Survival
+NRAS	neuroblastoma RAS viral (v-ras) oncogene homolog	2738	0.9868421053	0.0006925208	Oncogene	RAS	Cell Survival
+PAX5	paired box 5	49	0.4193548387	0.2580645161	TSG	Chromatin Modification	Cell Fate
+PBRM1	polybromo 1	171	0	0.8258928571	TSG	Chromatin Modification	Cell Fate
+PDGFRA	platelet-derived growth factor receptor, alpha polypeptide	653	0.8402985075	0.0149253731	Oncogene	PI3K; RAS	Cell Survival
+PHF6	PHD finger protein 6	57	0.1754385965	0.6140350877	TSG	Transcriptional Regulation	Cell Fate
+PIK3CA	phosphoinositide-3-kinase, catalytic, alpha polypeptide	4560	0.9507409727	0.0056355667	Oncogene	PI3K	Cell Survival
+PIK3R1	phosphoinositide-3-kinase, regulatory subunit 1 (alpha)	88	0.1386138614	0.3663366337	TSG	PI3K	Cell Survival
+PPP2R1A	protein phosphatase 2 (formerly 2A), regulatory subunit A, alpha isoform	86	0.8505747126	0.0229885057	Oncogene	Cell Cycle/Apoptosis	Cell Survival
+PRDM1	PR domain containing 1, with ZNF domain	46	0	0.6382978723	TSG	Chromatin Modification	Cell Fate
+PTCH1	patched homolog 1 (Drosophila)	318	0.0669456067	0.60041841	TSG	HH	Cell Fate
+PTEN	phosphatase and tensin homolog; phosphatase and tensin homolog pseudogene 1	1719	0.3016675088	0.5477513896	TSG	PI3K	Cell Survival
+PTPN11	protein tyrosine phosphatase, non-receptor type 11; similar to protein tyrosine phosphatase, non-receptor type 11	410	0.9031476998	0.0024213075	Oncogene	RAS	Cell Survival
+RB1	retinoblastoma 1	208	0.0434782609	0.7956521739	TSG	Cell Cycle/Apoptosis	Cell Survival
+RET	ret proto-oncogene	500	0.8647058824	0.0098039216	Oncogene	RAS; PI3K 	Cell Survival
+RNF43	ring finger protein 43	27	0.0666666667	0.4333333333	TSG	APC	Cell Fate
+RUNX1	runt-related transcription factor 1	304	0.3447204969	0.4068322981	TSG	Transcriptional Regulation	Cell Fate
+SETD2	SET domain containing 2	47	0.025974026	0.4675324675	TSG	Chromatin Modification	Cell Fate
+SETBP1	SET binding protein 1	95	0.25	0.04	Oncogene	Chromatin Modification; Replication	Cell Fate
+SF3B1	splicing factor 3b, subunit 1, 155kDa	516	0.9115384615	0	Oncogene	Transcriptional Regulation	Cell Fate
+SMAD2	SMAD family member 2	16	0	0.4117647059	TSG	TGF-b 	Cell Survival
+SMAD4	SMAD family member 4	207	0.2409090909	0.3863636364	TSG	TGF-b 	Cell Survival
+SMARCA4	SWI/SNF related, matrix associated, actin dependent regulator of chromatin, subfamily a, member 4	68	0.2173913043	0.2173913043	TSG	Chromatin Modification	Cell Fate
+SMARCB1	SWI/SNF related, matrix associated, actin dependent regulator of chromatin, subfamily b, member 1	247	0.1621621622	0.7374517375	TSG	Chromatin Modification	Cell Fate
+SMO	smoothened homolog (Drosophila)	34	0.5142857143	0.0285714286	Oncogene	HH	Cell Fate
+SOCS1	suppressor of cytokine signaling 1	41	0.1538461538	0.4615384615	TSG	STAT	Cell Survival
+SOX9	SRY (sex determining region Y)-box 9	9	0	0.7	TSG	APC	Cell Survival
+SPOP	speckle-type POZ protein	35	0.6571428571	0.0285714286	Oncogene	Chromatin Modification; HH	Cell Fate
+SRSF2	SRSF2 serine/arginine-rich splicing factor 2	273	0.9501779359	0.0177935943	Oncogene	Transcriptional Regulation	Cell Fate
+STAG2	stromal antigen 2	21	0	0.3333333333	TSG	DNA Damage Control	Genome Maintenance
+STK11	serine/threonine kinase 11	220	0.2421524664	0.5201793722	TSG	mTOR	Cell Survival
+TET2	tet oncogene family member 2	864	0.1418181818	0.7	TSG	Chromatin Modification	Cell Fate
+TNFAIP3	tumor necrosis factor, alpha-induced protein 3	136	0.0126582278	0.8037974684	TSG	Cell Cycle/Apoptosis; MAPK	Cell Survival
+TRAF7	TNF receptor-associated factor 7	123	0.61	0.09	TSG	Apoptosis	Cell Survival
+TP53	tumor protein p53	14438	0.7332263624	0.2032447852	TSG	Cell Cycle/Apoptosis; DNA Damage Control	Cell Survival
+TSC1	tuberous sclerosis 1	20	0	0.45	TSG	PI3K	Cell SUrvival
+TSHR	thyroid stimulating hormone receptor	301	0.8646864686	0.00330033	Oncogene	PI3K; MAPK	Cell Survival
+U2AF1	U2 small nuclear RNA auxiliary factor 1	96	0.9183673469	0.0102040816	Oncogene	Transcriptional Regulation	Cell Fate
+VHL	von Hippel-Lindau tumor suppressor	1287	0.2675018423	0.595431098	TSG	PI3K; RAS; STAT	Cell Survival
+WT1	Wilms tumor 1	312	0.101744186	0.7936046512	TSG	Chromatin Modification	Cell Fate

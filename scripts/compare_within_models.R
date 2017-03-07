@@ -27,7 +27,6 @@ opt <- optparse::parse_args(opt_parser);
 
 within_folder <- opt$within_dir
 pan_summary_dir <- opt$pancan_summary
-pan_summary <- file.path(pan_summary_dir, "classifier_summary.txt")
 
 process_classifier_summary <- function(summary_list, model_type) {
   # Takes in a parsed classifier summary list and outputs a processed dataframe
@@ -39,14 +38,15 @@ process_classifier_summary <- function(summary_list, model_type) {
   pancan_df <- data.frame(disease_perf[, "disease"])
   pancan_df$Gene <- summary_list[["Genes"]]
   pancan_df$AUROC <- summary_list[["Disease specific performance"]][, "cv"]
-  pancan_df$Model <- "Pan Cancer"
-  colnames(pancan_df)[1] <- model_type
+  pancan_df$Model <- model_type
+  colnames(pancan_df)[1] <- "Disease"
   return(pancan_df)
 }
 
 # Process PanCancer Classifier and summary files
+pan_summary <- file.path(pan_summary_dir, "classifier_summary.txt")
 pancan_list <- parse_summary(pan_summary)
-pancan_df <- process_classifier_summary(pancan_list, "Disease")
+pancan_df <- process_classifier_summary(pancan_list, "Pan Cancer")
 
 # Process Within Cancer Results
 within_tissue_files <- list.files(within_folder,

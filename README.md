@@ -4,15 +4,20 @@
 
 ## Detecting system-wide changes in whole transcriptomes
 
+A transcriptome can describe the total state of a tumor at a snapshot
+in time. In this repository, we use cancer transcriptomes from The Cancer
+Genome Atlas Pan Cancer dataset to interrogate gene expression states induced
+by deleterious mutations and copy number alterations.
+
 We have previously described the ability of a machine learning classifier to
 detect an NF1 inactivation signature using Glioblastoma data
 ([Way _et al._ 2016](http://doi.org/10.1186/s12864-017-3519-7)). We applied an
 ensemble of logistic regression classifiers to the problem, but the solutions were
 unstable and overfit. To address these issues, we posited that we could leverage
 data from diverse tissue-types to build a pancancer NF1 classifier. We also
-predicted that an RAS classifier would be able to detect tumors NF1 inactivation
-since NF1 directly inhibits RAS activity and there are many more examples of
-samples with RAS mutations.
+hypothesized that a RAS classifier would be able to detect tumors with NF1
+inactivation since NF1 directly inhibits RAS activity and there are many more
+examples of samples with RAS mutations.
 
 The code in this repository is flexible and can build a Pan-Cancer classifier
 for any combination of genes and cancer types using gene expression, mutation,
@@ -23,7 +28,8 @@ aberration and TP53 inactivation.
 
 All data used in this analysis are under controlled access by the The National
 Institutes of Health (NIH) and The Cancer Genome Atlas (TCGA). All data are
-downloaded from [synapse](http://synapse.org), which requires login and access
+downloaded from [synapse](http://synapse.org) or
+[dbGaP](https://www.ncbi.nlm.nih.gov/gap), which require login and access
 credentials. To request access contact _SynapseInfo@sagebase.org_ for specific
 details and instructions. Additionally, the mutation data requires a TCGA
 Jamboree and an eRA commons account.
@@ -32,24 +38,13 @@ Eventually, all of the controlled access data used in this pipeline will be
 made public. **We will update this database when the data is officially
 released.**
 
-We also provide the ability to build classifiers using publicly available
-data retrieved from [UCSC Xena](xena.ucsc.ecu).
-
 ## Cancer Genes
 
 Note that in order to use the copy number integration feature, an additional
 file must be downloaded. The file is `Supplementary Table S2` of
-[Vogelstein _et al._ 2013]("http://doi.org/10.1126/science.1235122"). It can
-be downloaded [here]("science.sciencemag.org/highwire/filestream/594203/field_highwire_adjunct_files/1/1235122TablesS1-4.xlsx").
+[Vogelstein _et al._ 2013]("http://doi.org/10.1126/science.1235122"). 
 
-Once the file is downloaded, move it to `data/vogelstein_cancergenes.tsv`
-
-To download file:
-
-```bash
-cancer_genes_url="http://science.sciencemag.org/highwire/filestream/594203/field_highwire_adjunct_files/1/1235122TablesS1-4.xlsx"
-wget $cancer_genes_url --output-document="data/vogelstein_cancergenes.xlsx"
-```
+Processed data is located here: `data/vogelstein_cancergenes.tsv`
 
 ## Usage
 
