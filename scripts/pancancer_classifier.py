@@ -11,20 +11,35 @@ Usage: Run in command line with required command argument:
 Where GENES is a comma separated string. There are also optional arguments:
 
     --diseases          comma separated string of disease types for classifier
-    --folds             number of cross validation folds (defaults to 5)
+                            default: Auto (will pick diseases from filter args)
+    --folds             number of cross validation folds
+                            default: 5
     --drop              drop the input genes from the X matrix
+                            default: False if flag omitted
     --copy_number       optional flag to supplement copy number to define Y
+                            default: False if flag omitted
     --filter_count      int of low count of mutation to include disease
+                            default: 15
     --filter_prop       float of low proportion of mutated samples per disease
+                            default: 0.05
     --num_features      int of number of genes to include in classifier
+                            default: 8000
     --alphas            comma separated string of alphas to test in pipeline
+                            default: '0.1,0.15,0.2,0.5,0.8,1'
     --l1_ratios         comma separated string of l1 parameters to test
+                            default: '0,0.1,0.15,0.18,0.2,0.3'
     --alt_genes         comma separated string of alternative genes to test
+                            default: None
     --alt_diseases      comma separated string of alternative diseases to test
+                            default: Auto
     --alt_filter_count  int of low count of mutations to include alt_diseases
+                            default: 15
     --alt_filter_prop   float of low proportion of mutated samples alt_disease
+                            default: 0.05
     --alt_folder        string of where to save the classifier figures
+                            default: Auto
     --remove_hyper      store_true: remove hypermutated samples
+                            default: False if flag omitted
 
 Output:
 ROC curves, AUROC across diseases, and classifier coefficients
@@ -118,7 +133,9 @@ if alt_folder != 'Auto':
 if not os.path.exists(base_folder):
     os.makedirs(base_folder)
 else:
-    warnings.warn('Classifier may have already been built!', category=Warning)
+    warnings.warn('Classifier may have already been built! Classifier results'
+                  'will be overwritten!', category=Warning)
+
 disease_folder = os.path.join(base_folder, 'disease')
 if not os.path.exists(disease_folder):
     os.makedirs(disease_folder)
@@ -269,10 +286,10 @@ plt.savefig(cv_heatmap_file, dpi=600, bbox_inches='tight')
 plt.close()
 
 # Get predictions
-y_pred_train = cv_pipeline.decision_function(x_train)
-y_pred_test = cv_pipeline.decision_function(x_test)
-metrics_train = get_threshold_metrics(y_train, y_pred_train)
-metrics_test = get_threshold_metrics(y_test, y_pred_test)
+y_predict_train = cv_pipeline.decision_function(x_train)
+y_predict_test = cv_pipeline.decision_function(x_test)
+metrics_train = get_threshold_metrics(y_train, y_predict_train)
+metrics_test = get_threshold_metrics(y_test, y_predict_test)
 
 # Rerun "cross validation" for the best hyperparameter set to define
 # cross-validation disease-specific performance. Each sample prediction is
@@ -311,25 +328,34 @@ plt.close()
 # disease specific performance
 disease_metrics = {}
 for disease in diseases:
+    # Get all samples in current disease
     sample_sub = y_matrix[y_matrix.cohort == disease].index.values
 
+    # Get true and predicted training labels
     y_disease_train = y_train[y_train.index.isin(sample_sub)]
-    y_disease_pred_train = y_pred_train[y_train.index.isin(sample_sub)]
-    y_disease_test = y_test[y_test.index.isin(sample_sub)]
-    y_disease_pred_test = y_pred_test[y_test.index.isin(sample_sub)]
-    y_disease_pred_cv = y_cv[y_train.index.isin(sample_sub)]
+    y_disease_predict_train = y_predict_train[y_train.index.isin(sample_sub)]
 
-    metrics_train_dis = get_threshold_metrics(y_disease_train,
-                                              y_disease_pred_train,
-                                              disease=disease)
-    metrics_test_dis = get_threshold_metrics(y_disease_test,
-                                             y_disease_pred_test,
-                                             disease=disease)
-    metrics_cv_dis = get_threshold_metrics(y_disease_train,
-                                           y_disease_pred_cv,
-                                           disease=disease)
-    disease_metrics[disease] = [metrics_train_dis, metrics_test_dis,
-                                metrics_cv_dis]
+    # Get true and predicted testing labels
+    y_disease_test = y_test[y_test.index.isin(sample_sub)]
+    y_disease_predict_test = y_predict_test[y_test.index.isin(sample_sub)]
+
+    # Get predicted labels for samples when they were in cross validation set
+    # The true labels are y_pred_train
+    y_disease_predict_cv = y_cv[y_train.index.isin(sample_sub)]
+
+    # Get classifier performance metrics for three scenarios for each disease
+    met_train_dis = get_threshold_metrics(y_disease_train,
+                                          y_disease_predict_train,
+                                          disease=disease)
+    met_test_dis = get_threshold_metrics(y_disease_test,
+                                         y_disease_predict_test,
+                                         disease=disease)
+    met_cv_dis = get_threshold_metrics(y_disease_train,
+                                       y_disease_predict_cv,
+                                       disease=disease)
+
+    # Store results in disease indexed dictionary
+    disease_metrics[disease] = [met_train_dis, met_test_dis, met_cv_dis]
 
 disease_auroc = {}
 for disease, metrics_val in disease_metrics.items():
