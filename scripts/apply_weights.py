@@ -22,6 +22,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+
 sys.path.insert(0, os.path.join('scripts', 'util'))
 from tcga_util import integrate_copy_number
 
@@ -38,11 +39,11 @@ copy_number = args.copy_number
 
 # Load Constants
 rnaseq_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
-sample_file = os.path.join('data', 'sampleset_freeze_version3.csv')
+sample_file = os.path.join('data', 'sample_freeze.tsv')
 cancer_gene_file = os.path.join('data', 'vogelstein_cancergenes.tsv')
 copy_loss_file = os.path.join('data', 'copy_number_loss_status.tsv')
 copy_gain_file = os.path.join('data', 'copy_number_gain_status.tsv')
-mutation_burden = os.path.join('ddr', 'data', 'mutation-load.txt')
+mutation_burden = os.path.join('data', 'mutation-load.txt')
 mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
 
 # Generate filenames to save output plots
@@ -52,7 +53,7 @@ output_dec_file = os.path.join(output_base_file, 'classifier_decisions.tsv')
 # Load Data
 rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
 mutation_df = pd.read_table(mut_file, index_col=0)
-sample_info = pd.read_csv(sample_file, index_col=0)
+sample_info = pd.read_table(sample_file, index_col=0)
 mut_burden = pd.read_table(mutation_burden)
 
 # Summarize data based on classifier summary file
@@ -93,7 +94,9 @@ if copy_number:
 
 # Add covariate info to y_matrix
 mut_subset_df = mut_subset_df.assign(total_status=mut_subset_df.max(axis=1))
-mut_subset_df = mut_subset_df.reset_index().merge(sample_info, how='left')\
+mut_subset_df = mut_subset_df.reset_index().merge(sample_info,
+                                                  left_on='SAMPLE_BARCODE',
+                                                  right_on='SAMPLE_BARCODE')\
                                            .set_index('SAMPLE_BARCODE')
 y_burden_matrix = mut_burden.merge(pd.DataFrame(mut_subset_df.total_status),
                                    right_index=True,
