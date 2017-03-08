@@ -134,7 +134,7 @@ if not os.path.exists(base_folder):
     os.makedirs(base_folder)
 else:
     warnings.warn('Classifier may have already been built! Classifier results'
-                  'will be overwritten!', category=Warning)
+                  ' will be overwritten!', category=Warning)
 
 disease_folder = os.path.join(base_folder, 'disease')
 if not os.path.exists(disease_folder):
