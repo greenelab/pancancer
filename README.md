@@ -70,7 +70,8 @@ source activate pancancer-classifier
 
 ### Example Scripts
 
-We provide two distinct example pipelines for predicting
+We provide two distinct example pipelines for predicting TP53 and RAS/NF1
+loss of function.
 
 1. TP53 loss of function (see [tp53_analysis.sh](tp53_analysis.sh))
 2. RAS/NF1 loss of function (see [ras_nf1_analysis.sh](ras_nf1_analysis.sh))
