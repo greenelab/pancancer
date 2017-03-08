@@ -27,5 +27,9 @@ data/raw/pancan_normalized_rnaseq.tsv
 synapse get syn5049520
 mv all_thresholded.by_genes_whitelisted.tsv data/raw/pancan_GISTIC_threshold.tsv
 
+# Mutation Burden data - number of mutations per Mb for each sample
+synapse get syn7994727
+mv mutation-load.txt data/mutation-load.txt
+
 # Check md5sums of downloaded files
 md5sum -c scripts/initialize/md5sums.txt
