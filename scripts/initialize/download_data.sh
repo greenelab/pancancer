@@ -40,7 +40,7 @@ data/raw/pancan_normalized_rnaseq.tsv
 # Accessible through sftp
 # NOTE: user must login using: USER@tcgaftps.nci.nih.gov
 
-# The data is located here, witch checksums in scripts/initialize/md5sums.txt
+# The data is located here, with checksums in scripts/initialize/md5sums.txt
 # /tcgajamboree/mc3/mc3.v0.2.8.PUBLIC.maf.gz
 
 ####################################
