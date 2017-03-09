@@ -39,6 +39,8 @@ sample_freeze_df = pd.read_csv(sample_freeze_file)
 rnaseq_df.index = rnaseq_df.index.map(lambda x: x.split('|')[0])
 rnaseq_df.columns = rnaseq_df.columns.str.slice(start=0, stop=15)
 rnaseq_df = rnaseq_df.drop('?').fillna(0).sort_index(axis=1)
+
+# Gene is listed twice in RNAseq data, drop both occurrences
 rnaseq_df.drop('SLC35E2', axis=0, inplace=True)
 rnaseq_df = rnaseq_df.T
 
