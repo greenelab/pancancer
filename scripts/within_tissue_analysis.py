@@ -51,12 +51,12 @@ alphas = args.alphas
 l1_ratios = args.l1_ratios
 remove_hyper = args.remove_hyper
 
-base_folder = os.path.join('classifiers', 'within_tissue',
+base_folder = os.path.join('classifiers', 'within_disease',
                            genes.replace(',', '_'))
 
 if diseases == 'Auto':
-    sample_freeze_file = os.path.join('data', 'sampleset_freeze_version3.csv')
-    sample_freeze = pd.read_csv(sample_freeze_file)
+    sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
+    sample_freeze = pd.read_table(sample_freeze_file, index_col=0)
     disease_types = sample_freeze['DISEASE'].unique().tolist()
 else:
     disease_types = diseases
