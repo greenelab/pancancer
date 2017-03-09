@@ -134,7 +134,7 @@ if not os.path.exists(base_folder):
     os.makedirs(base_folder)
 else:
     warnings.warn('Classifier may have already been built! Classifier results'
-                  'will be overwritten!', category=Warning)
+                  ' will be overwritten!', category=Warning)
 
 disease_folder = os.path.join(base_folder, 'disease')
 if not os.path.exists(disease_folder):
@@ -159,12 +159,12 @@ alt_gene_summary_file = os.path.join(base_folder,
 # Load Datasets
 expr_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
 mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
-sample_freeze_file = os.path.join('data', 'sampleset_freeze_version3.csv')
-mut_burden_file = os.path.join('ddr', 'data', 'mutation-load.txt')
+sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
+mut_burden_file = os.path.join('data', 'mutation-load.txt')
 
 rnaseq_df = pd.read_table(expr_file, index_col=0)
 mutation_df = pd.read_table(mut_file, index_col=0)
-sample_freeze = pd.read_csv(sample_freeze_file)
+sample_freeze = pd.read_table(sample_freeze_file, index_col=0)
 mut_burden = pd.read_table(mut_burden_file)
 
 # Construct data for classifier

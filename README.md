@@ -48,7 +48,12 @@ Processed data is located here: `data/vogelstein_cancergenes.tsv`
 
 ## Usage
 
-To run the entire pipeline enter the following in the command line:
+### Initialization
+
+The pipeline must first be initialized before use. Initialization will
+download and process data and setup computational environment.
+
+To initialize enter the following in the command line:
 
 ```sh
 # Login to synapse to download controlled-access data
@@ -59,9 +64,19 @@ synapse login
 conda env create --quiet --force --file environment.yml
 source activate pancancer-classifier
 
-# Reproduce pipeline
-./run_pipeline.sh
+# Initialize script
+./initialize.sh
 ```
+
+### Example Scripts
+
+We provide two distinct example pipelines for predicting TP53 and RAS/NF1
+loss of function.
+
+1. TP53 loss of function (see [tp53_analysis.sh](tp53_analysis.sh))
+2. RAS/NF1 loss of function (see [ras_nf1_analysis.sh](ras_nf1_analysis.sh))
+
+### Customization
 
 For custom analyses, use the `pancancer_classifier.py` script with command line
 arguments.
