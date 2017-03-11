@@ -1,6 +1,6 @@
 # Exon-Exon Junction Analyses using Snaptron Data
 
-**Snaptron experiments by [Wilks _et al.](https://doi.org/10.1101/097881)**
+**Snaptron experiments by [Wilks _et al._](https://doi.org/10.1101/097881)**
 
 *located at http://snaptron.cs.jhu.edu/*
 
