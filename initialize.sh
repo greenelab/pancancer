@@ -7,8 +7,8 @@
 bash scripts/initialize/download_data.sh
 
 # Process RNAseq and Mutation matrix
-python scripts/initialze/process_sample_freeze.py
+python scripts/initialize/process_sample_freeze.py
 
 # Process Copy Number matrix
-python scripts/initialize/process_copy_number.py
+python scripts/initialize/process_copynumber.py
 

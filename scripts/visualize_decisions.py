@@ -63,7 +63,7 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 pred_df = pd.read_table(prediction_file)
-diseases = pred_df['cohort'].unique()
+diseases = pred_df['DISEASE'].unique()
 
 # Visualize decision function
 plot_decision_function(subset_df=pred_df[pred_df.include == 1],
@@ -72,7 +72,7 @@ plot_decision_function(subset_df=pred_df[pred_df.include == 1],
 
 # Plot disease type specific decision functions
 for disease_type in diseases:
-    sub_df = pred_df.ix[pred_df.cohort == disease_type]
+    sub_df = pred_df.ix[pred_df.DISEASE == disease_type]
     d_file = os.path.join(out_dir, 'decision_plot_{}.pdf'.format(disease_type))
     d_title = 'Classifier Decision Function\n{}'.format(disease_type)
     plot_decision_function(subset_df=sub_df, filename=d_file, title=d_title)

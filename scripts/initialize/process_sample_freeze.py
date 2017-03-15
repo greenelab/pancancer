@@ -29,6 +29,7 @@ sample_freeze_file = os.path.join('data', 'raw',
 rna_out_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
 mut_out_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
 freeze_out_file = os.path.join('data', 'sample_freeze.tsv')
+burden_out_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 
 # Load Data
 rnaseq_df = pd.read_table(rna_file, index_col=0)
@@ -59,8 +60,10 @@ mutation_df = mutation_df.assign(SAMPLE_BARCODE=mutation_df
 # Determine consistent sample freeze between RNAseq and mutation
 mut_samples = set(mutation_df.SAMPLE_BARCODE.unique())
 freeze_barcodes = freeze_barcodes.intersection(mut_samples)
+freeze_barcodes = sorted(freeze_barcodes)
 
-# Remove duplicate rows in RNAseq data
+# Subset rnaseq data to only barcodes and remove duplicate rows
+rnaseq_df = rnaseq_df.loc[freeze_barcodes, :]
 rnaseq_df = rnaseq_df[~rnaseq_df.index.duplicated()]
 rnaseq_df.to_csv(rna_out_file, sep='\t', index_col=0)
 
@@ -91,13 +94,20 @@ mut_pivot = (mut_pivot.pivot_table(index='SAMPLE_BARCODE',
                       .astype(bool).astype(int))
 
 # 12 Samples don't have any deleterious mutations
-silent_samples = freeze_barcodes - set(mut_pivot.index)
-silent_df = pd.DataFrame(np.zeros((len(silent_samples), mut_pivot.shape[1])),
-                         columns=mut_pivot.columns)
-silent_df.index = silent_samples
-mut_pivot = mut_pivot.append(silent_df)
+# This command will introduce NAs for these 12 samples, fill them with zeros
+mut_pivot = mut_pivot.loc[freeze_barcodes, :]
+mut_pivot = mut_pivot.fillna(0)
 mut_pivot = mut_pivot.astype(int)
 mut_pivot.to_csv(mut_out_file, sep='\t', index_col=0)
+
+# Generate a mutation burden variable (log10 total deleterious mutations)
+burden_df = mutation_df[mutation_df['Variant_Classification'].isin(mutations)]
+burden_df = burden_df.groupby('SAMPLE_BARCODE').apply(len)
+burden_df = np.log10(burden_df)
+burden_df = burden_df.loc[freeze_barcodes]
+burden_df = burden_df.fillna(0)
+burden_df = pd.DataFrame(burden_df, columns=['log10_mut'])
+burden_df.to_csv(burden_out_file, sep='\t')
 
 # Write out finalized and subset sample freeze file
 sample_freeze_df = sample_freeze_df[sample_freeze_df.SAMPLE_BARCODE

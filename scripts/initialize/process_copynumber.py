@@ -26,7 +26,7 @@ sample_freeze_df = pd.read_table(sample_freeze_file)
 
 # Process and subset data
 copy_thresh_df = copy_thresh_df.T
-copy_thresh_df = copy_thresh_df.loc[sample_freeze_df['SAMPLE_BARCODE']]
+copy_thresh_df = copy_thresh_df.loc[sorted(sample_freeze_df['SAMPLE_BARCODE'])]
 copy_thresh_df = copy_thresh_df.fillna(0)
 copy_thresh_df = copy_thresh_df.astype(int)
 

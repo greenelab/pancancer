@@ -160,7 +160,7 @@ alt_gene_summary_file = os.path.join(base_folder,
 expr_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
 mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
 sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
-mut_burden_file = os.path.join('data', 'mutation-load.txt')
+mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 
 rnaseq_df = pd.read_table(expr_file, index_col=0)
 mutation_df = pd.read_table(mut_file, index_col=0)
@@ -219,24 +219,26 @@ if diseases[0] == 'Auto':
     diseases = filter_disease.index[filter_disease].tolist()
 
 # Load mutation burden and process covariates
-y = y[y.DISEASE.isin(diseases)].total_status
+y_df = y[y.DISEASE.isin(diseases)].total_status
 
 if remove_hyper:
-    burd = mut_burden['Silent per Mb'] < 2 * mut_burden['Silent per Mb'].std()
-    mut_burden = mut_burden[burd]
+    burden_filter = mut_burden['log10_mut'] < 5 * mut_burden['log10_mut'].std()
+    mut_burden = mut_burden[burden_filter]
 
-y_matrix = mut_burden.merge(pd.DataFrame(y), right_index=True,
-                            left_on='Tumor_Sample_ID')\
-    .set_index('Tumor_Sample_ID')
+y_matrix = mut_burden.merge(pd.DataFrame(y_df), right_index=True,
+                            left_on='SAMPLE_BARCODE')\
+    .set_index('SAMPLE_BARCODE')
 
 # Add covariate information
+y_sub = y.loc[y_matrix.index]['DISEASE']
 covar_dummy = pd.get_dummies(sample_freeze['DISEASE']).astype(int)
 covar_dummy.index = sample_freeze['SAMPLE_BARCODE']
 covar = covar_dummy.merge(y_matrix, right_index=True, left_index=True)
-covar.index = y_matrix.index
-covar = covar.drop(['cohort', 'Patient_ID', 'Non-silent per Mb'], axis=1)
-y_df = covar.total_status
-strat = y_matrix.cohort.str.cat(y_matrix.total_status.astype(str))[y_df.index]
+covar = covar.drop('total_status', axis=1)
+
+# How cross validation splits will be balanced and stratified
+y_df = y_df.loc[y_sub.index]
+strat = y_sub.str.cat(y_df.astype(str))
 
 # Subset x matrix to MAD genes and scale
 x_df = rnaseq_df.loc[y_df.index, :]
@@ -248,8 +250,7 @@ fitted_scaler = StandardScaler().fit(x_df)
 x_df_update = pd.DataFrame(fitted_scaler.transform(x_df),
                            columns=x_df.columns)
 x_df_update.index = x_df.index
-x_df = x_df_update.merge(covar, left_index=True, right_index=True)\
-                  .drop('total_status', axis=1)
+x_df = x_df_update.merge(covar, left_index=True, right_index=True)
 
 # Build classifier pipeline
 x_train, x_test, y_train, y_test = train_test_split(x_df, y_df, test_size=0.1,
@@ -329,7 +330,7 @@ plt.close()
 disease_metrics = {}
 for disease in diseases:
     # Get all samples in current disease
-    sample_sub = y_matrix[y_matrix.cohort == disease].index.values
+    sample_sub = y_sub[y_sub == disease].index
 
     # Get true and predicted training labels
     y_disease_train = y_train[y_train.index.isin(sample_sub)]
@@ -441,19 +442,20 @@ if alt_genes[0] is not 'None':
         alt_diseases = alt_filter_dis.index[alt_filter_dis].tolist()
 
     # Subset data
-    y_alt = y_alt[y_alt.DISEASE.isin(alt_diseases)].total_status
+    y_alt_df = y_alt[y_alt.DISEASE.isin(alt_diseases)].total_status
 
-    y_alt_matrix = mut_burden.merge(pd.DataFrame(y_alt), right_index=True,
-                                    left_on='Tumor_Sample_ID')\
-        .set_index('Tumor_Sample_ID')
+    y_alt_matrix = mut_burden.merge(pd.DataFrame(y_alt_df), right_index=True,
+                                    left_on='SAMPLE_BARCODE')\
+                             .set_index('SAMPLE_BARCODE')
 
     # Add Covariate Info to alternative y matrix
-    covar_alt = covar_dummy.merge(y_alt_matrix, right_index=True,
-                                  left_index=True)
-    covar_alt.index = y_alt_matrix.index
-    covar_alt = covar_alt.drop(['cohort', 'Patient_ID', 'Non-silent per Mb'],
-                               axis=1)
-    y_alt_df = covar_alt.total_status
+    y_alt_sub = y_alt.loc[y_alt_matrix.index]['DISEASE']
+    covar_dummy_alt = pd.get_dummies(sample_freeze['DISEASE']).astype(int)
+    covar_dummy_alt.index = sample_freeze['SAMPLE_BARCODE']
+    covar_alt = covar_dummy_alt.merge(y_alt_matrix, right_index=True,
+                                      left_index=True)
+    covar_alt = covar_alt.drop('total_status', axis=1)
+    y_alt_df = y_alt_df.loc[y_alt_sub.index]
 
     # Process alternative x matrix
     x_alt_df = rnaseq_df.loc[y_alt_df.index, :]
@@ -462,8 +464,7 @@ if alt_genes[0] is not 'None':
                                    columns=x_alt_df.columns)
     x_alt_df_update.index = x_alt_df.index
     x_alt_df = x_alt_df_update.merge(covar_alt, left_index=True,
-                                     right_index=True).drop('total_status',
-                                                            axis=1)
+                                     right_index=True)
 
     # Apply the previously fit model to predict the alternate Y matrix
     y_alt_cv = cv_pipeline.decision_function(X=x_alt_df)
@@ -472,7 +473,7 @@ if alt_genes[0] is not 'None':
     validation_metrics = {}
     val_x_type = {}
     for disease in alt_diseases:
-        sample_dis = y_alt_matrix[y_alt_matrix.cohort == disease].index.values
+        sample_dis = y_alt_sub[y_alt_sub == disease].index
 
         # Subset full data if it has not been trained on
         if disease not in diseases:

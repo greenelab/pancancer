@@ -47,6 +47,8 @@ sub_mut_df = mut_df[mut_df['Hugo_Symbol'].isin(genes)]
 sub_mut_df = sub_mut_df[['ID', 'Tumor_Sample_Barcode', 'Hugo_Symbol', 'HGVSc',
                          'HGVSp', 'Variant_Classification', ]]
 
-mapped_mutation_df = pred_df.merge(sub_mut_df, left_index=True,
-                                   right_on='ID', how='outer')
-mapped_mutation_df.to_csv(out_file, sep='\t')
+map_df = pred_df.merge(sub_mut_df, left_index=True, right_on='ID', how='outer')
+map_df.index = map_df['ID']
+map_df['Variant_Classification'] = map_df['Variant_Classification']\
+                                         .fillna('Wild-Type')
+map_df.to_csv(out_file, sep='\t')

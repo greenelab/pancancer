@@ -51,13 +51,6 @@ synapse get syn5049520
 mv all_thresholded.by_genes_whitelisted.tsv data/raw/pancan_GISTIC_threshold.tsv
 
 ####################################
-# Mutation burden data
-####################################
-# Mutation Burden data - number of mutations per Mb for each sample
-synapse get syn7994727
-mv mutation-load.txt data/mutation-load.txt
-
-####################################
 # Checksums
 ####################################
 # Confirm the integrity of downloaded data sets

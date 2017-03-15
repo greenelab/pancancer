@@ -75,50 +75,50 @@ p <- ggplot(coef_df, aes(x = 1:nrow(coef_df), y = weight)) +
   geom_segment(aes(x = 0, y = 0, yend = 0, xend = nrow(coef_df)),
                colour = "red", linetype = "dashed", size = 0.2)
 
-p <- add_arrow_label(p = p, x = 650, y = -0.205, label = "AEN",
-                     offset = c(80, 0.001, -350, -.002))
-p <- add_arrow_label(p = p, x = 750, y = -0.190, label = "DDB2",
+p <- add_arrow_label(p = p, x = 650, y = -0.205, label = "DDB2",
                      offset = c(70, 0.001, -445, -.0002))
+p <- add_arrow_label(p = p, x = 750, y = -0.190, label = "AEN",
+                     offset = c(80, 0.001, -350, -.002))
 p <- add_arrow_label(p = p, x = 1080, y = -0.172, label = "RPS27L",
                      offset = c(60, 0.001, -610, .0003))
 p <- add_arrow_label(p = p, x = 950, y = -0.155, label = "MDM2",
                      offset = c(50, -0.0001, -480, -.00013))
-p <- add_arrow_label(p = p, x = 1300, y = -0.14, label = "CDKN1A",
-                     offset = c(90, -0.0001, -710, -.00015))
-p <- add_arrow_label(p = p, x = 1200, y = -0.12, label = "BAX",
-                offset = c(80, -0.0001, -340, .0002))
-p <- add_arrow_label(p = p, x = 1200, y = -0.09, label = "FDXR",
+p <- add_arrow_label(p = p, x = 1300, y = -0.14, label = "BAX",
+                     offset = c(80, -0.0001, -340, .0002))
+p <- add_arrow_label(p = p, x = 1300, y = -0.12, label = "CDKN1A",
+                offset = c(90, -0.0001, -710, -.00015))
+p <- add_arrow_label(p = p, x = 1200, y = -0.1, label = "XPC",
                      offset = c(80, 0, -450, -.0002))
-p <- add_arrow_label(p = p, x = 1300, y = -0.07, label = "XPC",
-                     offset = c(80, 0, -400, -.0002))
-p <- add_arrow_label(p = p, x = 1400, y = -0.055, label = "MPDU1",
-                     offset = c(80, 0, -600, -.0006))
-p <- add_arrow_label(p = p, x = 1500, y = -0.04, label = "CYB5D2",
+p <- add_arrow_label(p = p, x = 1700, y = -0.085, label = "MPDU1",
+                     offset = c(80, 0, -600, -.0002))
+p <- add_arrow_label(p = p, x = 1400, y = -0.07, label = "FDXR",
+                     offset = c(80, 0, -500, -.0006))
+p <- add_arrow_label(p = p, x = 1500, y = -0.055, label = "CYB5D2",
                      offset = c(80, 0, -650, -.0002))
-p <- add_arrow_label(p = p, x = 7200, y = 0.1, label = "RNF26",
+
+p <- add_arrow_label(p = p, x = 7200, y = 0.1, label = "KIF1B",
                      offset = c(-50, .001, 450, -.006))
-p <- add_arrow_label(p = p, x = 6900, y = 0.085, label = "KIF1B",
+p <- add_arrow_label(p = p, x = 6900, y = 0.085, label = "EEPD1",
                      offset = c(-50, .0006, 360, -.006))
-p <- add_arrow_label(p = p, x = 6600, y = 0.07, label = "EEPD1",
-                     offset = c(-50, .0004, 560, -.0015))
-p <- add_arrow_label(p = p, x = 6250, y = 0.054, label = "TTK",
-                     offset = c(-50, .0004, 350, -.0015))
-p <- add_arrow_label(p = p, x = 5950, y = 0.036, label = "CDC123",
-                     offset = c(-50, .0004, 690, -.0015))
-p <- add_arrow_label(p = p, x = 5550, y = 0.021, label = "RNF114",
-                     offset = c(-50, .0004, 690, -.0015))
-p <- add_arrow_label(p = p, x = 6950, y = 0.012, label = "ZNF259",
+p <- add_arrow_label(p = p, x = 6600, y = 0.07, label = "SPATS2L",
+                     offset = c(-50, .0004, 760, -.0015))
+p <- add_arrow_label(p = p, x = 6250, y = 0.054, label = "CDC123",
+                     offset = c(-50, .0004, 700, -.0015))
+p <- add_arrow_label(p = p, x = 5950, y = 0.036, label = "ID4",
+                     offset = c(-50, .0004, 390, -.0015))
+p <- add_arrow_label(p = p, x = 5550, y = 0.021, label = "MIIP",
+                     offset = c(-50, .0004, 390, -.0015))
+p <- add_arrow_label(p = p, x = 6950, y = 0.012, label = "DCAF13",
                      offset = c(-50, -.001, 470, .0055))
-p <- add_arrow_label(p = p, x = 6250, y = -0.03, label = "Silent per Mb",
-                     offset = c(-50, -.004, 800, .008))
+
+p <- add_arrow_label(p = p, x = 2500, y = -0.03, label = "log10_mut",
+                     offset = c(50, 0, -900, 0))
 ggsave(file = file.path(results_folder, "figures", "ddr_coefficient_plot.pdf"),
        plot = p, height = 2.5, width = 2.75, dpi = 600)
 
 # 3) Plot distributions of predictions according to variant classification
 mut_df <- readr::read_tsv(file.path(results_folder, "tables",
                                     "mutation_classification_scores.tsv"))
-mut_df <- mut_df[, -1]
-colnames(mut_df)[2] <- "index"
 
 consider_mutations <- c("3'UTR", "5'UTR", "Intron", "Frame_Shift_Del",
                         "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins",
@@ -133,41 +133,47 @@ mut_filtered_df <- dplyr::bind_rows(delet_df, silent_df)
 # Separate classes of mutations to summarize
 copy_num_df <- mut_df %>% filter(TP53_loss == 1) %>%
   filter(TP53 == 0) %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Loss")
 missense_df <- mut_filtered_df %>%
   filter(Variant_Classification == "Missense_Mutation") %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Missense")
 nonsense_df <- mut_filtered_df %>%
   filter(Variant_Classification == "Nonsense_Mutation") %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Nonsense")
 indel_df <- mut_filtered_df %>% filter(Variant_Classification %in%
                                        c("Frame_Shift_Del", "Frame_Shift_Ins",
                                          "In_Frame_Del", "In_Frame_Ins")) %>%
-  filter(!(index %in% c(missense_df$index, nonsense_df$index))) %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  filter(!(Variant_Classification %in%
+             c(missense_df$Variant_Classification,
+               nonsense_df$Variant_Classification))) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Indel")
 utr_df <- mut_filtered_df %>%
   filter(Variant_Classification %in% c("3'UTR", "5'UTR", "Intron")) %>%
-  filter(!(index %in% c(missense_df$index, nonsense_df$index))) %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  filter(!(Variant_Classification %in%
+             c(missense_df$Variant_Classification,
+               nonsense_df$Variant_Classification))) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "UTR")
 silent_df <- silent_df %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Silent")
 splice_df <- mut_filtered_df %>%
   filter(Variant_Classification == "Splice_Site") %>%
-  filter(!(index %in% c(missense_df$index, nonsense_df$index))) %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  filter(!(Variant_Classification %in%
+             c(missense_df$Variant_Classification,
+               nonsense_df$Variant_Classification))) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Splice")
 wt_df <- mut_df %>% subset(total_status == 0) %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "WT")
 hyper_df <- mut_df %>%
   filter(hypermutated == 1) %>%
-  select(index, DISEASE, weight, HGVSc, HGVSp) %>%
+  select(Variant_Classification, DISEASE, weight, HGVSc, HGVSp) %>%
   mutate(classification = "Hyper")
 
 final_df <- dplyr::bind_rows(list(missense_df, nonsense_df, indel_df, utr_df,

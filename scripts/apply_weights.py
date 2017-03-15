@@ -39,12 +39,12 @@ copy_number = args.copy_number
 
 # Load Constants
 rnaseq_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
-sample_file = os.path.join('data', 'sample_freeze.tsv')
+mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
+sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
 cancer_gene_file = os.path.join('data', 'vogelstein_cancergenes.tsv')
 copy_loss_file = os.path.join('data', 'copy_number_loss_status.tsv')
 copy_gain_file = os.path.join('data', 'copy_number_gain_status.tsv')
-mutation_burden = os.path.join('data', 'mutation-load.txt')
-mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
+mutation_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 
 # Generate filenames to save output plots
 output_base_file = os.path.dirname(classifier_file)
@@ -53,8 +53,8 @@ output_dec_file = os.path.join(output_base_file, 'classifier_decisions.tsv')
 # Load Data
 rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
 mutation_df = pd.read_table(mut_file, index_col=0)
-sample_info = pd.read_table(sample_file, index_col=0)
-mut_burden = pd.read_table(mutation_burden)
+sample_freeze_df = pd.read_table(sample_freeze_file, index_col=0)
+mut_burden_df = pd.read_table(mutation_burden_file)
 
 # Summarize data based on classifier summary file
 with open(classifier_file) as class_fh:
@@ -94,22 +94,22 @@ if copy_number:
 
 # Add covariate info to y_matrix
 mut_subset_df = mut_subset_df.assign(total_status=mut_subset_df.max(axis=1))
-mut_subset_df = mut_subset_df.reset_index().merge(sample_info,
+mut_subset_df = mut_subset_df.reset_index().merge(sample_freeze_df,
                                                   left_on='SAMPLE_BARCODE',
                                                   right_on='SAMPLE_BARCODE')\
                                            .set_index('SAMPLE_BARCODE')
-y_burden_matrix = mut_burden.merge(pd.DataFrame(mut_subset_df.total_status),
-                                   right_index=True,
-                                   left_on='Tumor_Sample_ID')\
-                            .set_index('Tumor_Sample_ID')
+y_burden_matrix = mut_burden_df.merge(pd.DataFrame(mut_subset_df.total_status),
+                                      right_index=True,
+                                      left_on='SAMPLE_BARCODE')\
+                               .set_index('SAMPLE_BARCODE')
 
-# Add covariate information and extract Y DataFrame
-covar_df = pd.get_dummies(y_burden_matrix['cohort']).astype(int)
-covar_df.index = y_burden_matrix.index
-covar_df = covar_df.merge(y_burden_matrix, right_index=True, left_index=True)
-covar_df.index = y_burden_matrix.index
-covar_df = covar_df.drop(['cohort', 'Patient_ID', 'Non-silent per Mb'], axis=1)
+y_sub = mut_subset_df.loc[y_burden_matrix.index]['DISEASE']
+covar_dummy = pd.get_dummies(sample_freeze_df['DISEASE']).astype(int)
+covar_dummy.index = sample_freeze_df['SAMPLE_BARCODE']
+covar_df = covar_dummy.merge(y_burden_matrix, right_index=True,
+                             left_index=True)
 y_df = covar_df.total_status
+covar_df = covar_df.drop('total_status', axis=1)
 
 # Subset x matrix to MAD genes, scale expression, and add covariate info
 x_df = rnaseq_df.ix[y_df.index, :]
@@ -117,8 +117,7 @@ scaled_fit = StandardScaler().fit(x_df)
 x_df_update = pd.DataFrame(scaled_fit.transform(x_df),
                            columns=x_df.columns)
 x_df_update.index = x_df.index
-x_df = x_df_update.merge(covar_df, left_index=True, right_index=True)\
-           .drop('total_status', axis=1)
+x_df = x_df_update.merge(covar_df, left_index=True, right_index=True)
 
 # Reorder x matrix to the same features as the weight coefficients
 x_df = x_df[coef_df['feature']]
@@ -136,9 +135,9 @@ final_pred = final_pred.merge(mut_subset_df.drop('total_status', axis=1),
 
 # Add information (hypermutated samples and if they were used to train model)
 final_pred = final_pred.assign(hypermutated=1)
-final_pred.loc[final_pred['Silent per Mb'] < 2 *
-               final_pred['Silent per Mb'].std(), 'hypermutated'] = 0
+final_pred.loc[final_pred['log10_mut'] < 5 * final_pred['log10_mut'].std(),
+               'hypermutated'] = 0
 final_pred = final_pred.assign(include=0)
-final_pred.loc[(final_pred.cohort.isin(diseases)) &
+final_pred.loc[(final_pred.DISEASE.isin(diseases)) &
                (final_pred.hypermutated == 0), 'include'] = 1
 final_pred.to_csv(output_dec_file, sep='\t')
