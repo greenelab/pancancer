@@ -17,7 +17,7 @@ set.seed(123)
 
 snaptron_file <- 'junctions_with_mutations.csv'
 junc_df <- readr::read_csv(snaptron_file)
-junc_df <- junc_df[,-1]
+junc_df <- junc_df[, -1]
 junc_df <- junc_df[!duplicated(junc_df), ]
 
 # Sort data for plotting later
