@@ -2,6 +2,8 @@
 
 **Gregory Way and Casey Greene**
 
+[![DOI](https://zenodo.org/badge/68009604.svg)](https://zenodo.org/badge/latestdoi/68009604)
+
 ## Detecting system-wide changes in whole transcriptomes
 
 A transcriptome can describe the total state of a tumor at a snapshot
