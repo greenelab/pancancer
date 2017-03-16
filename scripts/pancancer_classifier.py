@@ -1,6 +1,5 @@
 """
 Gregory Way 2017
-Heavily modified from https://github.com/cognoma/machine-learning/
 PanCancer Classifier
 scripts/pancancer_classifier.py
 
