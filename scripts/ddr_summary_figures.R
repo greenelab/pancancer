@@ -64,57 +64,58 @@ coef_df <- coef_df[order(coef_df$weight, decreasing = FALSE), ]
 coef_df$rank <- 1:nrow(coef_df)
 
 p <- ggplot(coef_df, aes(x = 1:nrow(coef_df), y = weight)) +
-  geom_point(aes(fill = "black"), size = 0.01) +
+  geom_point(fill = "black", size = 0.01) +
   base_theme + theme(axis.line.x = element_line(),
                      axis.line.y = element_line(),
                      axis.ticks = element_line(),
-                     plot.margin = unit(c(0.25, 0.25, 0.1, 0.1),"cm")) +
+                     axis.title = element_text(size = rel(1.5)),
+                     plot.margin = unit(c(0.25, 0.25, 0.1, 0.1), "cm")) +
   labs(list(x = "Rank", y = "Weight")) +
   scale_y_continuous(breaks = seq(-0.25, 0.25, 0.05)) +
-  scale_x_continuous(breaks = seq(0, 8000, 1000)) +
+  scale_x_continuous(breaks = seq(0, 8000, 2000)) +
   geom_segment(aes(x = 0, y = 0, yend = 0, xend = nrow(coef_df)),
                colour = "red", linetype = "dashed", size = 0.2)
 
-p <- add_arrow_label(p = p, x = 650, y = -0.205, label = "DDB2",
-                     offset = c(70, 0.001, -445, -.0002))
-p <- add_arrow_label(p = p, x = 750, y = -0.190, label = "AEN",
-                     offset = c(80, 0.001, -350, -.002))
-p <- add_arrow_label(p = p, x = 1080, y = -0.172, label = "RPS27L",
-                     offset = c(60, 0.001, -610, .0003))
+p <- add_arrow_label(p = p, x = 1050, y = -0.205, label = "DDB2",
+                     offset = c(80, 0.001, -645, -.0002))
+p <- add_arrow_label(p = p, x = 1150, y = -0.190, label = "AEN",
+                     offset = c(80, 0.001, -450, 0))
+p <- add_arrow_label(p = p, x = 1480, y = -0.172, label = "RPS27L",
+                     offset = c(80, 0.001, -890, .0003))
 p <- add_arrow_label(p = p, x = 950, y = -0.155, label = "MDM2",
-                     offset = c(50, -0.0001, -480, -.00013))
-p <- add_arrow_label(p = p, x = 1300, y = -0.14, label = "BAX",
-                     offset = c(80, -0.0001, -340, .0002))
-p <- add_arrow_label(p = p, x = 1300, y = -0.12, label = "CDKN1A",
-                offset = c(90, -0.0001, -710, -.00015))
-p <- add_arrow_label(p = p, x = 1200, y = -0.1, label = "XPC",
-                     offset = c(80, 0, -450, -.0002))
-p <- add_arrow_label(p = p, x = 1700, y = -0.085, label = "MPDU1",
-                     offset = c(80, 0, -600, -.0002))
-p <- add_arrow_label(p = p, x = 1400, y = -0.07, label = "FDXR",
-                     offset = c(80, 0, -500, -.0006))
-p <- add_arrow_label(p = p, x = 1500, y = -0.055, label = "CYB5D2",
-                     offset = c(80, 0, -650, -.0002))
+                     offset = c(80, -0.001, -680, -.00013))
+p <- add_arrow_label(p = p, x = 1700, y = -0.14, label = "BAX",
+                     offset = c(80, -0.001, -510, .0002))
+p <- add_arrow_label(p = p, x = 2000, y = -0.12, label = "CDKN1A",
+                offset = c(90, 0.0001, -950, -.00015))
+p <- add_arrow_label(p = p, x = 1800, y = -0.1, label = "XPC",
+                     offset = c(80, 0, -550, -.0002))
+p <- add_arrow_label(p = p, x = 2100, y = -0.085, label = "MPDU1",
+                     offset = c(80, 0, -800, -.0002))
+p <- add_arrow_label(p = p, x = 1800, y = -0.07, label = "FDXR",
+                     offset = c(80, 0, -650, -.0006))
+p <- add_arrow_label(p = p, x = 1900, y = -0.055, label = "PHLDA3",
+                     offset = c(80, 0, -890, -.0002))
 
-p <- add_arrow_label(p = p, x = 7200, y = 0.1, label = "KIF1B",
-                     offset = c(-50, .001, 450, -.006))
-p <- add_arrow_label(p = p, x = 6900, y = 0.085, label = "EEPD1",
-                     offset = c(-50, .0006, 360, -.006))
-p <- add_arrow_label(p = p, x = 6600, y = 0.07, label = "SPATS2L",
-                     offset = c(-50, .0004, 760, -.0015))
-p <- add_arrow_label(p = p, x = 6250, y = 0.054, label = "CDC123",
-                     offset = c(-50, .0004, 700, -.0015))
-p <- add_arrow_label(p = p, x = 5950, y = 0.036, label = "ID4",
-                     offset = c(-50, .0004, 390, -.0015))
-p <- add_arrow_label(p = p, x = 5550, y = 0.021, label = "MIIP",
-                     offset = c(-50, .0004, 390, -.0015))
-p <- add_arrow_label(p = p, x = 6950, y = 0.012, label = "DCAF13",
-                     offset = c(-50, -.001, 470, .0055))
+p <- add_arrow_label(p = p, x = 7000, y = 0.1, label = "KIF1B",
+                     offset = c(-80, .001, 550, -.006))
+p <- add_arrow_label(p = p, x = 6700, y = 0.085, label = "EEPD1",
+                     offset = c(-80, .0006, 460, -.006))
+p <- add_arrow_label(p = p, x = 6400, y = 0.07, label = "MIIP",
+                     offset = c(-80, .0004, 500, -.0015))
+p <- add_arrow_label(p = p, x = 6050, y = 0.054, label = "ID4",
+                     offset = c(-80, .0004, 490, -.0015))
+p <- add_arrow_label(p = p, x = 5750, y = 0.036, label = "CDC123",
+                     offset = c(-80, .0004, 900, -.0015))
+p <- add_arrow_label(p = p, x = 5350, y = 0.021, label = "DDX27",
+                     offset = c(-80, .0004, 790, -.0015))
+p <- add_arrow_label(p = p, x = 6750, y = 0.012, label = "DCAF13",
+                     offset = c(-80, -.001, 570, .007))
 
-p <- add_arrow_label(p = p, x = 2500, y = -0.03, label = "log10_mut",
-                     offset = c(50, 0, -900, 0))
-ggsave(file = file.path(results_folder, "figures", "ddr_coefficient_plot.pdf"),
-       plot = p, height = 2.5, width = 2.75, dpi = 600)
+p <- add_arrow_label(p = p, x = 6500, y = -0.03, label = "log10_mut",
+                     offset = c(-50, -0.002, 900, 0.005))
+ggsave(file.path(results_folder, "figures", "ddr_coefficient_plot.pdf"),
+       plot = p, height = 2.5, width = 2.25, dpi = 600)
 
 # 3) Plot distributions of predictions according to variant classification
 mut_df <- readr::read_tsv(file.path(results_folder, "tables",

@@ -46,7 +46,7 @@ process_classifier_summary <- function(summary_list, model_type) {
 # Process PanCancer Classifier and summary files
 pan_summary <- file.path(pan_summary_dir, "classifier_summary.txt")
 pancan_list <- parse_summary(pan_summary)
-pancan_df <- process_classifier_summary(pancan_list, "Pan Cancer")
+pancan_df <- process_classifier_summary(pancan_list, "Pan")
 
 # Process Within Cancer Results
 within_tissue_files <- list.files(within_folder,
@@ -55,7 +55,7 @@ within_tissue_files <- list.files(within_folder,
 within_tissue_data <- data.frame()
 for (file in within_tissue_files) {
   file_summary <- parse_summary(file)
-  file_frame <- process_classifier_summary(file_summary, "Within Disease")
+  file_frame <- process_classifier_summary(file_summary, "Within")
   within_tissue_data <- rbind(within_tissue_data, file_frame)
 }
 
@@ -65,7 +65,7 @@ plot_ready$AUROC <- as.numeric(paste(plot_ready$AUROC))
 ggplot(plot_ready, aes(x = Disease, y = AUROC, fill = Model)) +
   geom_bar(position = "dodge", stat = "identity") +
   theme_bw() + within_theme +
-  theme(legend.position = c(1.09, 0.65),
+  theme(legend.position = c(1.07, 0.65),
         legend.background = element_rect(fill = alpha("white", 0)),
         plot.margin = unit(c(0.2, 1.5, 0, 0.1), "cm")) +
   scale_fill_manual(values = c("brown", "gold")) +
@@ -76,4 +76,4 @@ ggplot(plot_ready, aes(x = Disease, y = AUROC, fill = Model)) +
   scale_y_continuous(breaks = seq(0.4, 1, 0.1))
   
 ggsave(file.path(pan_summary_dir, "figures", "comparison.pdf"), units = "in",
-       height = 1.8, width = 4.2, dpi = 600)
+       height = 1.4, width = 4.2, dpi = 600)

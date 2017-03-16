@@ -50,6 +50,10 @@ data/raw/pancan_normalized_rnaseq.tsv
 synapse get syn5049520
 mv all_thresholded.by_genes_whitelisted.tsv data/raw/pancan_GISTIC_threshold.tsv
 
+# Segment based scores - measurement of total copy number burden
+synapse get syn7415024
+mv seg_based_scores.tsv data/seg_based_scores.tsv
+
 ####################################
 # Checksums
 ####################################
