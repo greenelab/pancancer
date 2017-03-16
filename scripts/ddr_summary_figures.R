@@ -203,6 +203,8 @@ ggsave(file.path(results_folder, "figures", "variant_fill_map.pdf"),
 
 # 4) Show mutation frequencies and scores
 mut_weight_df <- mut_filtered_df %>% filter(!is.na(weight))
+mut_weight_df <- mut_weight_df[mut_weight_df$hypermutated != 1, ]
+
 aa_df <- mut_weight_df %>%
   group_by(HGVSp, Variant_Classification) %>%
   summarise(Mean = mean(weight),
