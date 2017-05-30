@@ -7,7 +7,8 @@ Usage: For import only
 """
 
 
-def get_threshold_metrics(y_true, y_pred, disease='all'):
+def get_threshold_metrics(y_true, y_pred, drop_intermediate=False,
+                          disease='all'):
     """
     Retrieve true/false positive rates and auroc for classification predictions
 
@@ -23,7 +24,11 @@ def get_threshold_metrics(y_true, y_pred, disease='all'):
     from sklearn.metrics import roc_auc_score, roc_curve
 
     roc_columns = ['fpr', 'tpr', 'threshold']
-    roc_items = zip(roc_columns, roc_curve(y_true, y_pred))
+    if drop_intermediate:
+        roc_items = zip(roc_columns,
+                        roc_curve(y_true, y_pred, drop_intermediate=False))
+    else:
+        roc_items = zip(roc_columns, roc_curve(y_true, y_pred))
     roc_df = pd.DataFrame.from_items(roc_items)
     auroc = roc_auc_score(y_true, y_pred, average='weighted')
     return {'auroc': auroc, 'roc_df': roc_df, 'disease': disease}

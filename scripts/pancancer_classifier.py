@@ -39,6 +39,8 @@ Where GENES is a comma separated string. There are also optional arguments:
                             default: Auto
     --remove_hyper      store_true: remove hypermutated samples
                             default: False if flag omitted
+    --keep_intermediate store_true: keep intermediate roc curve items
+                            default: False if flag omitted
 
 Output:
 ROC curves, AUROC across diseases, and classifier coefficients
@@ -99,6 +101,8 @@ parser.add_argument('-o', '--alt_folder', default='Auto',
                     help='Provide an alternative folder to save results')
 parser.add_argument('-v', '--remove_hyper', action='store_true',
                     help='Remove hypermutated samples')
+parser.add_argument('-k', '--keep_intermediate', action='store_true',
+                    help='Keep intermediate ROC values for plotting')
 args = parser.parse_args()
 
 # Load command arguments
@@ -118,6 +122,7 @@ alt_filter_prop = float(args.alt_filter_prop)
 alt_diseases = args.alt_diseases.split(',')
 alt_folder = args.alt_folder
 remove_hyper = args.remove_hyper
+keep_inter = args.keep_intermediate
 
 warnings.filterwarnings('ignore',
                         message='Changing the shape of non-C contiguous array')
@@ -145,6 +150,7 @@ full_roc_file = os.path.join(base_folder, 'all_disease_roc.pdf')
 disease_roc_file = os.path.join(base_folder, 'disease', 'classifier_')
 disease_summary_file = os.path.join(base_folder, 'disease_summary.pdf')
 classifier_file = os.path.join(base_folder, 'classifier_coefficients.tsv')
+roc_results_file = os.path.join(base_folder, 'pancan_roc_results.tsv')
 
 alt_gene_base = 'alt_gene_{}_alt_disease_{}'.format(
                 args.alt_genes.replace(',', '_'),
@@ -288,15 +294,29 @@ plt.close()
 # Get predictions
 y_predict_train = cv_pipeline.decision_function(x_train)
 y_predict_test = cv_pipeline.decision_function(x_test)
-metrics_train = get_threshold_metrics(y_train, y_predict_train)
-metrics_test = get_threshold_metrics(y_test, y_predict_test)
+metrics_train = get_threshold_metrics(y_train, y_predict_train,
+                                      drop_intermediate=keep_inter)
+metrics_test = get_threshold_metrics(y_test, y_predict_test,
+                                     drop_intermediate=keep_inter)
 
 # Rerun "cross validation" for the best hyperparameter set to define
 # cross-validation disease-specific performance. Each sample prediction is
 # based on the fold that the sample was in the testing partition
 y_cv = cross_val_predict(cv_pipeline.best_estimator_, X=x_train, y=y_train,
                          cv=folds, method='decision_function')
-metrics_cv = get_threshold_metrics(y_train, y_cv)
+metrics_cv = get_threshold_metrics(y_train, y_cv,
+                                   drop_intermediate=keep_inter)
+
+# Decide to save ROC results to file
+if keep_inter:
+    train_roc = metrics_train['roc_df']
+    train_roc = train_roc.assign(train_type='train')
+    test_roc = metrics_test['roc_df']
+    test_roc = test_roc.assign(train_type='test')
+    cv_roc = metrics_cv['roc_df']
+    cv_roc = cv_roc.assign(train_type='cv')
+    full_roc_df = pd.concat([train_roc, test_roc, cv_roc])
+    full_roc_df = full_roc_df.assign(disease='PanCan')
 
 # Plot ROC
 sns.set_style("whitegrid")
@@ -346,13 +366,27 @@ for disease in diseases:
     # Get classifier performance metrics for three scenarios for each disease
     met_train_dis = get_threshold_metrics(y_disease_train,
                                           y_disease_predict_train,
-                                          disease=disease)
+                                          disease=disease,
+                                          drop_intermediate=keep_inter)
     met_test_dis = get_threshold_metrics(y_disease_test,
                                          y_disease_predict_test,
-                                         disease=disease)
+                                         disease=disease,
+                                         drop_intermediate=keep_inter)
     met_cv_dis = get_threshold_metrics(y_disease_train,
                                        y_disease_predict_cv,
-                                       disease=disease)
+                                       disease=disease,
+                                       drop_intermediate=keep_inter)
+
+    if keep_inter:
+        train_roc = met_train_dis['roc_df']
+        train_roc = train_roc.assign(train_type='train')
+        test_roc = met_test_dis['roc_df']
+        test_roc = test_roc.assign(train_type='test')
+        cv_roc = met_cv_dis['roc_df']
+        cv_roc = cv_roc.assign(train_type='cv')
+        full_dis_roc_df = train_roc.append(test_roc).append(cv_roc)
+        full_dis_roc_df = full_dis_roc_df.assign(disease=disease)
+        full_roc_df = full_roc_df.append(full_dis_roc_df)
 
     # Store results in disease indexed dictionary
     disease_metrics[disease] = [met_train_dis, met_test_dis, met_cv_dis]
@@ -408,6 +442,9 @@ coef_df = pd.DataFrame.from_items([
 coef_df['abs'] = coef_df['weight'].abs()
 coef_df = coef_df.sort_values('abs', ascending=False)
 coef_df.to_csv(classifier_file, sep='\t')
+
+if keep_inter:
+    full_roc_df.to_csv(roc_results_file, sep='\t')
 
 # Apply the same classifier previously built to predict alternative genes
 if alt_genes[0] is not 'None':
@@ -467,7 +504,8 @@ if alt_genes[0] is not 'None':
 
     # Apply the previously fit model to predict the alternate Y matrix
     y_alt_cv = cv_pipeline.decision_function(X=x_alt_df)
-    alt_metrics_cv = get_threshold_metrics(y_alt_df, y_alt_cv)
+    alt_metrics_cv = get_threshold_metrics(y_alt_df, y_alt_cv,
+                                           drop_intermediate=keep_inter)
 
     validation_metrics = {}
     val_x_type = {}
@@ -492,9 +530,11 @@ if alt_genes[0] is not 'None':
         y_pred_alt_cv = y_alt_cv[y_alt_df.index.isin(y_sub.index)]
 
         alt_metrics_dis = get_threshold_metrics(y_sub, y_pred_alt,
-                                                disease=disease)
+                                                disease=disease,
+                                                drop_intermediate=keep_inter)
         alt_metrics_dis_cv = get_threshold_metrics(y_sub, y_pred_alt_cv,
-                                                   disease=disease)
+                                                   disease=disease,
+                                                   drop_intermediate=keep_inter)
         validation_metrics[disease] = [alt_metrics_dis, alt_metrics_dis_cv]
 
     # Compile a summary dataframe
