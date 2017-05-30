@@ -1,0 +1,15 @@
+  c.silent_trunc..total_silent. c.wt_trunc..total_wt.
+1                            22                    78
+2                            25                  5514
+
+	Fisher's Exact Test for Count Data
+
+data:  f_test
+p-value < 2.2e-16
+alternative hypothesis: true odds ratio is not equal to 1
+95 percent confidence interval:
+  31.80055 119.90418
+sample estimates:
+odds ratio 
+  61.87047 
+
