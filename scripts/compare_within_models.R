@@ -7,7 +7,11 @@
 # Usage: Run by assigning where the within classifier summary is and where the
 #        Pan Cancer classifier summary is
 #
-#     R --no-save --args <within_tissue_folder> <pan_cancer_folder>
+#     Rscript scripts/compare_within_models.R 
+#
+#     with the required flags:
+#         --pancan_summary      Directory of where classifier summary is
+#         --within_dir          Directory of where within cancer-type data is
 #
 # Output:
 # Bar Plots for each comparison
@@ -28,21 +32,6 @@ opt <- optparse::parse_args(opt_parser);
 within_folder <- opt$within_dir
 pan_summary_dir <- opt$pancan_summary
 
-process_classifier_summary <- function(summary_list, model_type) {
-  # Takes in a parsed classifier summary list and outputs a processed dataframe
-  #
-  # summary_list - a list storing classifier attributes and performance
-  # model_type - a string that will indicate the type of model
-
-  disease_perf <- summary_list[["Disease specific performance"]]
-  pancan_df <- data.frame(disease_perf[, "disease"])
-  pancan_df$Gene <- summary_list[["Genes"]]
-  pancan_df$AUROC <- summary_list[["Disease specific performance"]][, "cv"]
-  pancan_df$Model <- model_type
-  colnames(pancan_df)[1] <- "Disease"
-  return(pancan_df)
-}
-
 # Process PanCancer Classifier and summary files
 pan_summary <- file.path(pan_summary_dir, "classifier_summary.txt")
 pancan_list <- parse_summary(pan_summary)
@@ -61,6 +50,7 @@ for (file in within_tissue_files) {
 
 plot_ready <- plyr::rbind.fill(within_tissue_data, pancan_df)
 plot_ready$AUROC <- as.numeric(paste(plot_ready$AUROC))
+plot_ready <- plot_ready[complete.cases(plot_ready), ]
 
 ggplot(plot_ready, aes(x = Disease, y = AUROC, fill = Model)) +
   geom_bar(position = "dodge", stat = "identity") +
@@ -74,6 +64,6 @@ ggplot(plot_ready, aes(x = Disease, y = AUROC, fill = Model)) +
   ylab("CV AUROC") +
   coord_cartesian(ylim = c(0.4, 1)) +
   scale_y_continuous(breaks = seq(0.4, 1, 0.1))
-  
-ggsave(file.path(pan_summary_dir, "figures", "comparison.pdf"), units = "in",
-       height = 1.4, width = 4.2, dpi = 600)
+
+ggsave(file.path(pan_summary_dir, "comparison.svg"), units = "in",
+       height = 1.4, width = 4.2)

@@ -145,10 +145,10 @@ if not os.path.exists(disease_folder):
     os.makedirs(disease_folder)
 
 count_table_file = os.path.join(base_folder, 'summary_counts.csv')
-cv_heatmap_file = os.path.join(base_folder, 'cv_heatmap.pdf')
-full_roc_file = os.path.join(base_folder, 'all_disease_roc.pdf')
+cv_heatmap_file = os.path.join(base_folder, 'cv_heatmap.svg')
+full_roc_file = os.path.join(base_folder, 'all_disease_roc.svg')
 disease_roc_file = os.path.join(base_folder, 'disease', 'classifier_')
-disease_summary_file = os.path.join(base_folder, 'disease_summary.pdf')
+disease_summary_file = os.path.join(base_folder, 'disease_summary.svg')
 classifier_file = os.path.join(base_folder, 'classifier_coefficients.tsv')
 roc_results_file = os.path.join(base_folder, 'pancan_roc_results.tsv')
 
@@ -157,7 +157,7 @@ alt_gene_base = 'alt_gene_{}_alt_disease_{}'.format(
                 args.alt_diseases.replace(',', '_'))
 alt_count_table_file = os.path.join(base_folder, 'alt_summary_counts.csv')
 alt_gene_disease_file = os.path.join(base_folder,
-                                     '{}_classifier.pdf'.format(alt_gene_base))
+                                     '{}_classifier.svg'.format(alt_gene_base))
 alt_gene_summary_file = os.path.join(base_folder,
                                      '{}_summary.tsv'.format(alt_gene_base))
 
@@ -288,7 +288,7 @@ ax = sns.heatmap(cv_score_mat, annot=True, fmt='.1%')
 ax.set_xlabel('Regularization strength multiplier (alpha)')
 ax.set_ylabel('Elastic net mixing parameter (l1_ratio)')
 plt.tight_layout()
-plt.savefig(cv_heatmap_file, dpi=600, bbox_inches='tight')
+plt.savefig(cv_heatmap_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
 # Get predictions
@@ -342,7 +342,7 @@ plt.tick_params(labelsize=8)
 plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
            fontsize=7.5)
 plt.tight_layout()
-plt.savefig(full_roc_file, dpi=600, bbox_inches='tight')
+plt.savefig(full_roc_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
 # disease specific performance
@@ -394,7 +394,7 @@ for disease in diseases:
 disease_auroc = {}
 for disease, metrics_val in disease_metrics.items():
     met_train, met_test, met_cv = metrics_val
-    disease_roc_sub_file = '{}_pred_{}.pdf'.format(disease_roc_file, disease)
+    disease_roc_sub_file = '{}_pred_{}.svg'.format(disease_roc_file, disease)
 
     plt.figure(figsize=(2.7, 2.4))
     auroc = []
@@ -418,7 +418,8 @@ for disease, metrics_val in disease_metrics.items():
     plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
                fontsize=7.5)
     plt.tight_layout()
-    plt.savefig(disease_roc_sub_file, dpi=600, bbox_inches='tight')
+    plt.savefig(disease_roc_sub_file, dpi=600, format='svg',
+                bbox_inches='tight')
     plt.close()
 
 disease_results = pd.DataFrame(disease_auroc, index=['Train', 'Test',
@@ -428,7 +429,7 @@ disease_results = disease_results.sort_values('Cross Validation',
 ax = disease_results.plot(kind='bar', title='Disease Specific Performance')
 ax.set_ylabel('AUROC')
 plt.tight_layout()
-plt.savefig(disease_summary_file, dpi=600, bbox_inches='tight')
+plt.savefig(disease_summary_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
 # Save classifier coefficients
@@ -555,7 +556,8 @@ if alt_genes[0] is not 'None':
     ax.set_ylim([0, 1])
     ax.set_ylabel('AUROC')
     plt.tight_layout()
-    plt.savefig(alt_gene_disease_file)
+    plt.savefig(alt_gene_disease_file, dpi=600, format='svg',
+                bbox_inches='tight')
     plt.close()
 
 # Write a summary for the inputs and outputs of the classifier

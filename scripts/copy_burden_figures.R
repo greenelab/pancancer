@@ -19,8 +19,8 @@ base_file <- file.path("classifiers", "TP53")
 burden_file <- file.path(base_file, "tables", "copy_burden_predictions.tsv")
 snaptron_file <- file.path("scripts", "snaptron",
                            "junctions_with_mutations.csv")
-frac_alt_plot <- file.path(base_file, "figures", "fraction_altered_plot.pdf")
-violin_plot <- file.path(base_file, "figures", "seg_altered_violin_plot.pdf")
+frac_alt_plot <- file.path(base_file, "figures", "fraction_altered_plot.svg")
+violin_plot <- file.path(base_file, "figures", "seg_altered_violin_plot.svg")
 
 # Load Files
 copy_burden <- readr::read_tsv(burden_file)
@@ -40,7 +40,7 @@ ggplot(copy_burden, aes(weight, frac_altered, color = factor(TP53))) +
   xlab("TP53 Inactivation Probability") +
   ylab("CNV Burden (Fraction Altered)") +
   labs(color = "TP53 Status")
-ggsave(frac_alt_plot, width = 5, height = 4, dpi = 600)
+ggsave(frac_alt_plot, width = 5, height = 4)
 
 # Build and Process Copy Burden DataFrame
 copy_burden$silent <- 0
@@ -100,5 +100,5 @@ ggplot(plot_ready, aes(x = TP53, y = frac_altered)) +
         panel.border = element_rect(fill = NA, size = 0.4)) +
   guides(fill = guide_legend(reverse = TRUE, ncol = 1), color = FALSE)
 
-ggsave(violin_plot, height = 2.25, width = 2.5, dpi = 600)
+ggsave(violin_plot, height = 2.25, width = 2.5)
 

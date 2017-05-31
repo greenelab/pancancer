@@ -106,3 +106,18 @@ add_arrow_label <- function(p, x, y, label, offset = c(0, 0, 0, 0)) {
              size = 0.18, arrow = arrow(length = unit(0.05, "cm")))
   return(p)
 }
+
+process_classifier_summary <- function(summary_list, model_type) {
+  # Takes in a parsed classifier summary list and outputs a processed dataframe
+  #
+  # summary_list - a list storing classifier attributes and performance
+  # model_type - a string that will indicate the type of model
+  
+  disease_perf <- summary_list[["Disease specific performance"]]
+  pancan_df <- data.frame(disease_perf[, "disease"])
+  pancan_df$Gene <- paste(summary_list[["Genes"]], collapse = "_")
+  pancan_df$AUROC <- summary_list[["Disease specific performance"]][, "cv"]
+  pancan_df$Model <- model_type
+  colnames(pancan_df)[1] <- "Disease"
+  return(pancan_df)
+}

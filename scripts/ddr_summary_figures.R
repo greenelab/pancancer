@@ -21,6 +21,7 @@ results_folder <- file.path("classifiers", "TP53")
 results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
 
 # 1) Heatmap of the distribution of aberrant events across tumors
+heatmap_plot_file <- file.path(results_folder, "figures", "tp53_heatmap.pdf")
 heat_file <- file.path(results_folder, "summary_counts.csv")
 heat_df <- readr::read_csv(heat_file)
 
@@ -54,10 +55,11 @@ pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
          display_numbers = TRUE, number_format = "%.0f", fontsize_number = 8,
          number_color = "black", annotation_col = classifier,
          annotation_names_col = FALSE, legend = FALSE,
-         filename = file.path(results_folder, "figures", "tp53_heatmap.pdf"),
+         filename = heatmap_plot_file,
          width = 8, height = 2)
 
 # 2) Coefficients contributing to the model
+coef_plot_file <- file.path(results_folder, "figures", "ddr_coef_plot.svg")
 coef_df <- results[["Coefficients"]]
 coef_df <- coef_df[, -1]
 coef_df <- coef_df[order(coef_df$weight, decreasing = FALSE), ]
@@ -114,10 +116,10 @@ p <- add_arrow_label(p = p, x = 6750, y = 0.012, label = "DCAF13",
 
 p <- add_arrow_label(p = p, x = 6500, y = -0.03, label = "log10_mut",
                      offset = c(-50, -0.002, 900, 0.005))
-ggsave(file.path(results_folder, "figures", "ddr_coefficient_plot.pdf"),
-       plot = p, height = 2.5, width = 2.25, dpi = 600)
+ggsave(coef_plot_file, plot = p, height = 2.5, width = 2.25)
 
 # 3) Plot distributions of predictions according to variant classification
+var_plot_file <- file.path(results_folder, "figures", "variant_fill_map.svg")
 mut_df <- readr::read_tsv(file.path(results_folder, "tables",
                                     "mutation_classification_scores.tsv"))
 
@@ -198,8 +200,7 @@ ggplot(final_df, aes(Weight, ..count.., fill = Class)) +
         axis.text.x = element_text(size = 9),
         axis.text.y = element_text(size = 9),
         axis.title = element_text(size = 12))
-ggsave(file.path(results_folder, "figures", "variant_fill_map.pdf"),
-       width = 4, height = 3.8, dpi = 600)
+ggsave(var_plot_file, width = 4, height = 3.8)
 
 # 4) Show mutation frequencies and scores
 mut_weight_df <- mut_filtered_df %>% filter(!is.na(weight))

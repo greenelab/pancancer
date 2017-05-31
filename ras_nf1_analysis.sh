@@ -23,14 +23,20 @@ python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --diseases $ras_
         --remove_hyper --copy_number --alphas $alphas --l1_ratios $l1_mixing \
         --alt_genes 'NF1' --alt_diseases $nf1_diseases --alt_folder 'classifiers/RAS'
 
-# 3. Within Tissue NF1 Classification
+# 3. Within cancer-type  NF1 Classification
 python scripts/within_tissue_analysis.py --genes 'NF1' \
         --diseases $nf1_diseases --remove_hyper \
         --alphas $alphas --l1_ratios $l1_mixing \
         --alt_folder 'classifiers/NF1/within_disease'
 
-# 4. Within Tissue RAS Classification
+# 4. Within cancer-type RAS Classification
 python scripts/within_tissue_analysis.py --genes 'KRAS,HRAS,NRAS' \
         --diseases $ras_diseases --remove_hyper \
         --alphas $alphas --l1_ratios $l1_mixing \
         --alt_folder 'classifiers/RAS/within_disease'
+
+# 5. Compare within disease type classification
+Rscript scripts/compare_within_models.R --pancan_summary 'classifiers/NF1/' \
+        --within_dir 'classifiers/NF1/within_disease/'
+Rscript scripts/compare_within_models.R --pancan_summary 'classifiers/RAS/' \
+        --within_dir 'classifiers/RAS/within_disease/'
