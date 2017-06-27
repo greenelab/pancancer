@@ -147,7 +147,9 @@ if not os.path.exists(disease_folder):
 count_table_file = os.path.join(base_folder, 'summary_counts.csv')
 cv_heatmap_file = os.path.join(base_folder, 'cv_heatmap.svg')
 full_roc_file = os.path.join(base_folder, 'all_disease_roc.svg')
-disease_roc_file = os.path.join(base_folder, 'disease', 'classifier_')
+full_prc_file = os.path.join(base_folder, 'all_disease_prc.svg')
+disease_roc_file = os.path.join(base_folder, 'disease', 'classifier_roc_')
+disease_prc_file = os.path.join(base_folder, 'disease', 'classifier_prc_')
 disease_summary_file = os.path.join(base_folder, 'disease_summary.svg')
 classifier_file = os.path.join(base_folder, 'classifier_coefficients.tsv')
 roc_results_file = os.path.join(base_folder, 'pancan_roc_results.tsv')
@@ -345,6 +347,33 @@ plt.tight_layout()
 plt.savefig(full_roc_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
+# Plot PRC
+sns.set_style("whitegrid")
+plt.figure(figsize=(2.7, 2.4))
+total_auprc = {}
+colors = ['blue', 'green', 'orange']
+idx = 0
+for label, metrics in [('Training', metrics_train), ('Testing', metrics_test),
+                       ('CV', metrics_cv)]:
+
+    prc_df = metrics['prc_df']
+    plt.plot(prc_df.recall, prc_df.precision,
+             label='{} (AUPRC = {:.1%})'.format(label, metrics['auprc']),
+             linewidth=2, c=colors[idx])
+    total_auprc[label] = metrics['auprc']
+    idx += 1
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('Recall', fontsize=8)
+plt.ylabel('Precision', fontsize=8)
+plt.title('')
+plt.tick_params(labelsize=8)
+plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
+           fontsize=7.5)
+plt.tight_layout()
+plt.savefig(full_prc_file, dpi=600, format='svg', bbox_inches='tight')
+plt.close()
+
 # disease specific performance
 disease_metrics = {}
 for disease in diseases:
@@ -392,10 +421,40 @@ for disease in diseases:
     disease_metrics[disease] = [met_train_dis, met_test_dis, met_cv_dis]
 
 disease_auroc = {}
+disease_auprc = {}
 for disease, metrics_val in disease_metrics.items():
     met_train, met_test, met_cv = metrics_val
+    disease_prc_sub_file = '{}_pred_{}.svg'.format(disease_prc_file, disease)
     disease_roc_sub_file = '{}_pred_{}.svg'.format(disease_roc_file, disease)
 
+    # Plot disease specific PRC
+    plt.figure(figsize=(2.7, 2.4))
+    auprc = []
+    idx = 0
+    for label, metrics in [('Training', met_train), ('Testing', met_test),
+                           ('CV', met_cv)]:
+        prc_df = metrics['prc_df']
+        plt.plot(prc_df.recall, prc_df.precision,
+                 label='{} (AUPRC = {:.1%})'.format(label, metrics['auprc']),
+                 linewidth=2, c=colors[idx])
+        auprc.append(metrics['auprc'])
+        idx += 1
+    disease_auprc[disease] = auprc
+
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('Recall', fontsize=8)
+    plt.ylabel('Precision', fontsize=8)
+    plt.title('')
+    plt.tick_params(labelsize=8)
+    plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
+               fontsize=7.5)
+    plt.tight_layout()
+    plt.savefig(disease_prc_sub_file, dpi=600, format='svg',
+                bbox_inches='tight')
+    plt.close()
+
+    # Plot disease specific ROC
     plt.figure(figsize=(2.7, 2.4))
     auroc = []
     idx = 0
@@ -588,11 +647,18 @@ with open(os.path.join(base_folder, 'classifier_summary.txt'), 'w') as sum_fh:
     summarywriter.writerow(['Training AUROC:', metrics_train['auroc']])
     summarywriter.writerow(['Testing AUROC:', metrics_test['auroc']])
     summarywriter.writerow(['Cross Validation AUROC', metrics_cv['auroc']])
+    summarywriter.writerow(['Training AUPRC:', metrics_train['auprc']])
+    summarywriter.writerow(['Testing AUPRC:', metrics_test['auprc']])
+    summarywriter.writerow(['Cross Validation AUPRC:', metrics_cv['auprc']])
     summarywriter.writerow(['Disease specific performance:'])
     for disease, auroc in disease_auroc.items():
         summarywriter.writerow(['', disease, 'Training AUROC:', auroc[0],
                                 'Testing AUROC:', auroc[1],
                                 'Cross Validation AUROC:', auroc[2]])
+    for disease, auprc in disease_auprc.items():
+        summarywriter.writerow(['', disease, 'Training AUPRC:', auprc[0],
+                                'Testing AUPRC:', auprc[1],
+                                'Cross Validation AUPRC:', auprc[2]])
     if alt_genes[0] is not 'None':
         summarywriter.writerow(['Alternate gene performance:'] + alt_genes)
         summarywriter.writerow(['Alternative gene AUROC:',
