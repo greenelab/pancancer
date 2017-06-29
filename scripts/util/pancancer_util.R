@@ -56,29 +56,70 @@ parse_summary <- function(summary_info) {
   }
   summary_list <- list()
   dis_spec_perf <- c()
+  alt_spec_perf <- c()
+  alt_gene <- FALSE
   for (line in summary_info) {
     line <- unlist(strsplit(line, "\t"))
     if (is.na(line[1]) | (line[1] %in% c("Parameters:", "Results:",
-                                         "Disease specific performance:"))) {
+                                         "Disease specific performance:",
+                                         "Alternative gene AUROC:"))) {
+      if (is.na(line[1])) {
+        next
+      }
+      if (line[1] == "Alternative gene AUROC:") {
+        alt_gene <- TRUE
+      }
       next
     }
     if (line[1] == "Coefficients:") {
       summary_list[[sub(":", "", line[1])]] <-
         suppressMessages(readr::read_tsv(line[2]))
-    } else if  (line[1] == "") {
+    } else if (line[1] == "") {
       disease_info <- line[2:length(line)]
       disease <- disease_info[1]
+      perf_type <- gsub(":", "", unlist(strsplit(disease_info[2], " "))[2])
       train <- disease_info[3]
       test <- disease_info[5]
       cv <- disease_info[7]
-      dis_spec_perf <- rbind(dis_spec_perf, c(disease, train, test, cv))
+      disease_summary <- c(disease, train, test, cv, perf_type)
+      if (alt_gene) {
+        alt_spec_perf <- rbind(alt_spec_perf, disease_summary)
+      } else {
+        dis_spec_perf <- rbind(dis_spec_perf, disease_summary)
+      }
     } else {
       summary_list[[gsub(":", "", line[1])]] <- line[2:length(line)]
     }
   }
-  colnames(dis_spec_perf) <- c("disease", "training", "testing", "cv")
-  summary_list[["Disease specific performance"]] <- dis_spec_perf
+  colnames(dis_spec_perf) <- c("disease", "training", "testing", "cv",
+                               "performance_type")
+  summary_list[["Disease performance"]] <- data.frame(dis_spec_perf)
+  if (alt_gene) {
+    colnames(alt_spec_perf) <- c("disease", "holdout", "cv", "data_type",
+                                 "performance_type")
+    summary_list[["Alt gene performance"]] <- data.frame(alt_spec_perf)
+  }
+  
   return(summary_list)
+}
+
+process_classifier_summary <- function(summary_list, model_type,
+                                       gene_type = "Disease performance",
+                                       gene_class = "Genes",
+                                       perf_type = "AUROC") {
+  # Takes in a parsed classifier summary list and outputs a processed dataframe
+  #
+  # summary_list - a list storing classifier attributes and performance
+  # model_type - a string that will indicate the type of model
+  
+  disease_perf <- summary_list[[gene_type]]
+  disease_perf <- disease_perf[disease_perf$performance_type == perf_type, ]
+  pancan_df <- data.frame(disease_perf[, "disease"])
+  pancan_df$Gene <- paste(summary_list[[gene_class]], collapse = "_")
+  pancan_df$Performance_type <- disease_perf[, "cv"]
+  pancan_df$Model <- model_type
+  colnames(pancan_df)[1] <- "Disease"
+  return(pancan_df)
 }
 
 add_arrow_label <- function(p, x, y, label, offset = c(0, 0, 0, 0)) {
@@ -105,19 +146,4 @@ add_arrow_label <- function(p, x, y, label, offset = c(0, 0, 0, 0)) {
              xend = x_point + offset_x_point, yend = y_point + offset_y_point,
              size = 0.18, arrow = arrow(length = unit(0.05, "cm")))
   return(p)
-}
-
-process_classifier_summary <- function(summary_list, model_type) {
-  # Takes in a parsed classifier summary list and outputs a processed dataframe
-  #
-  # summary_list - a list storing classifier attributes and performance
-  # model_type - a string that will indicate the type of model
-  
-  disease_perf <- summary_list[["Disease specific performance"]]
-  pancan_df <- data.frame(disease_perf[, "disease"])
-  pancan_df$Gene <- paste(summary_list[["Genes"]], collapse = "_")
-  pancan_df$AUROC <- summary_list[["Disease specific performance"]][, "cv"]
-  pancan_df$Model <- model_type
-  colnames(pancan_df)[1] <- "Disease"
-  return(pancan_df)
 }
