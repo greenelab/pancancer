@@ -159,8 +159,10 @@ alt_gene_base = 'alt_gene_{}_alt_disease_{}'.format(
                 args.alt_genes.replace(',', '_'),
                 args.alt_diseases.replace(',', '_'))
 alt_count_table_file = os.path.join(base_folder, 'alt_summary_counts.csv')
-alt_gene_disease_file = os.path.join(base_folder,
-                                     '{}_classifier.svg'.format(alt_gene_base))
+alt_gene_auroc_file = os.path.join(base_folder,
+                                   '{}_auroc_bar.svg'.format(alt_gene_base))
+alt_gene_auprc_file = os.path.join(base_folder,
+                                   '{}_auprc_bar.svg'.format(alt_gene_base))
 alt_gene_summary_file = os.path.join(base_folder,
                                      '{}_summary.tsv'.format(alt_gene_base))
 
@@ -629,7 +631,7 @@ if alt_genes[0] is not 'None':
     ax.set_ylim([0, 1])
     ax.set_ylabel('AUROC')
     plt.tight_layout()
-    plt.savefig(alt_gene_disease_file, dpi=600, format='svg',
+    plt.savefig(alt_gene_auroc_file, dpi=600, format='svg',
                 bbox_inches='tight')
     plt.close()
 
@@ -642,7 +644,7 @@ if alt_genes[0] is not 'None':
     ax.set_ylim([0, 1])
     ax.set_ylabel('AUPRC')
     plt.tight_layout()
-    plt.savefig(alt_gene_disease_file, dpi=600, format='svg',
+    plt.savefig(alt_gene_auprc_file, dpi=600, format='svg',
                 bbox_inches='tight')
     plt.close()
 
