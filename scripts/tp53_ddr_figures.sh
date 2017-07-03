@@ -15,7 +15,7 @@ python scripts/apply_weights.py --classifier $tp53_dir --copy_number
 # 2. Summarize and visualize performance of classifiers
 python scripts/visualize_decisions.py --scores $tp53_dir --custom 'TP53_loss'
 python scripts/map_mutation_class.py --scores $tp53_dir --genes 'TP53'
-Rscript --vanilla scripts/ddr_summary_figures.R
+Rscript --vanilla scripts/viz/ddr_summary_figures.R
 Rscript --vanilla scripts/compare_within_models.R \
         --within_dir $tp53_dir'/within_disease' --pancan_summary $tp53_dir 
 

@@ -182,7 +182,7 @@ if (!is.null(alt_gene_dir)) {
                                    levels = c('Within', 'Pan', 'Ras'))
 
     # Subset to specific cancer_types
-    use_dis <- c("GBM", "LGG", "SARC", "OV", "STAD")
+    use_dis <- c("GBM", "LGG", "PCPG", "COAD", "OV", "UCEC")
     plot_auroc_alt <- plot_auroc_alt %>% dplyr::filter(Disease %in% use_dis)
     plot_auprc_alt <- plot_auprc_alt %>% dplyr::filter(Disease %in% use_dis)
   }

@@ -81,7 +81,11 @@ parse_summary <- function(summary_info) {
       disease <- disease_info[1]
       perf_type <- gsub(":", "", unlist(strsplit(disease_info[2], " "))[2])
       train <- disease_info[3]
-      test <- disease_info[5]
+      if (alt_gene) {
+        test <- disease_info[3]
+      } else {
+        test <- disease_info[5]
+      }
       cv <- disease_info[7]
       disease_summary <- c(disease, train, test, cv, perf_type)
       if (alt_gene) {

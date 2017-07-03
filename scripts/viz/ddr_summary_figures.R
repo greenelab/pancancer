@@ -1,13 +1,13 @@
 # Gregory Way 2017
 # PanCancer Classifier
-# scripts/ddr_summary_figures.R
+# scripts/viz/ddr_summary_figures.R
 #
 # Visualize summary for DNA Damage Repair/Response (DDR) classification scores
 #
 # Usage: Run by assigning where the within classifier summary is and where the
 #        Pan Cancer classifier summary is
 #
-#     Rscript --vanilla ddr_summary_figures.R
+#     Rscript --vanilla scripts/viz/ddr_summary_figures.R
 #
 # Output:
 # Several figures to summarize DDR findings
