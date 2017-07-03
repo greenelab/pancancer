@@ -12,6 +12,8 @@
 # Output:
 # Several figures to summarize DDR findings
 
+checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
+
 library(dplyr)
 library(pheatmap)
 library(ggplot2)

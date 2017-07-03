@@ -1,10 +1,14 @@
 name: pancancer-classifier
+channels:
+- r
+- bioconda
 dependencies:
-- jupyter=1.0.0
-- numpy=1.11.2
-- pandas=0.18.0
-- scikit-learn=0.18.0
-- seaborn=0.7.1
-- python=3.5.2
-- statsmodels=0.6.1
-- numexpr=2.5
+- bioconda::r-checkpoint=0.4.0
+- anaconda::jupyter=1.0.0
+- anaconda::numpy=1.11.2
+- anaconda::pandas=0.19.2
+- anaconda::scikit-learn=0.18.1
+- anaconda::seaborn=0.7.1
+- anaconda::python=3.5.2
+- anaconda::statsmodels=0.8.0
+- anaconda::numexpr=2.6.2

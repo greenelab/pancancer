@@ -19,6 +19,8 @@
 # Output:
 # Bar Plots for each comparison
 
+checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
+
 library(ggplot2)
 library(dplyr)
 source(file.path("scripts", "util", "pancancer_util.R"))

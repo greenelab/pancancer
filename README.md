@@ -1,4 +1,4 @@
-# Building gene expression classifiers using TCGA Pan-Cancer Atlas data
+# Gene expression machine learning classifiers from TCGA PanCancerAtlas
 
 **Gregory Way and Casey Greene**
 
@@ -8,23 +8,31 @@
 
 A transcriptome can describe the total state of a tumor at a snapshot
 in time. In this repository, we use cancer transcriptomes from The Cancer
-Genome Atlas Pan Cancer consortium to interrogate gene expression states
+Genome Atlas PanCancerAtlas project to interrogate gene expression states
 induced by deleterious mutations and copy number alterations.
 
 The code in this repository is flexible and can build a Pan-Cancer classifier
-for any combination of genes and cancer types using gene expression, mutation,
+for any combination of genes and cancer-types using gene expression, mutation,
 and copy number data. In this repository, we provide examples for building
-classifiers to detect aberration in _TP53_ and _NF1_/RAS signalling.
+classifiers to detect aberration in _TP53_ and Ras signalling.
+
+### TP53
+
+We are interested in building a classifier to detect _TP53_ inactivation.
+_TP53_ is the most highly mutated gene in cancer and regulates several important
+tumorigenic processes such as apoptosis and DNA damage response (DDR). We also
+include a pipeline to build and evaluate a machine learning _TP53_ classifier.
+
+### Ras Signaling
 
 We have previously described the ability of a machine learning classifier to
 detect an _NF1_ inactivation signature using Glioblastoma data
-([Way _et al._ 2016](http://doi.org/10.1186/s12864-017-3519-7)). We applied an
-ensemble of logistic regression classifiers to the problem, but the solutions
-were unstable and overfit. To address these issues, we posited that we could
-leverage data from diverse cancer types to build a pancancer _NF1_ classifier.
-We also hypothesized that a RAS classifier would be able to detect tumors with
-_NF1_ inactivation since _NF1_ directly inhibits RAS activity and there are
-many more examples of samples with RAS mutations.
+([Way _et al._ 2016](http://doi.org/10.1186/s12864-017-3519-7)). There, we
+applied an ensemble of logistic regression classifiers to the problem, but the
+solutions were unstable and overfit. To address these issues, we posited that
+we could leverage data from diverse cancer types to build a pancancer _NF1_
+classifier. We also hypothesized that a Ras classifier would be able to detect
+tumors with _NF1_ inactivation since _NF1_ directly inhibits RAS activity.
 
 ## Controlled Access Data
 
@@ -45,7 +53,7 @@ released.**
 ### Initialization
 
 The pipeline must be initialized before use. Initialization will download and
-process data and setup computational environment.
+process data and setup computational environment for R and python.
 
 To initialize, enter the following in the command line:
 
@@ -67,7 +75,7 @@ We provide two distinct example pipelines for predicting _TP53_ and _NF1_/RAS
 loss of function.
 
 1. _TP53_ loss of function (see [tp53_analysis.sh](tp53_analysis.sh))
-2. _NF1_/RAS loss of function (see [ras_nf1_analysis.sh](ras_nf1_analysis.sh))
+2. Ras signaling hyperactivation (see [ras_analysis.sh](ras_analysis.sh))
 
 ### Customization
 
@@ -97,4 +105,6 @@ python scripts/pancancer_classifier.py ...
 | `--alt_filter_prop` |  `0.05` | Filtering used for alternative disease classification |
 | `--alt_folder` | `Auto` | Location to save all classifier figures |
 | `--remove_hyper` | `False` | Decision to remove hyper mutated tumors |
+| `--keep_intermediate` | `False` | Decision to keep intermediate ROC curve metrics |
+
 

@@ -5,4 +5,4 @@ classifiers/
 .ipynb_checkpoints/
 *.ipynb
 __pycache__/
-DEPRECATED/
+.checkpoint/

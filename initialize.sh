@@ -6,6 +6,9 @@
 # Note - currently requires synapse login and dbGAP controlled access
 bash scripts/initialize/download_data.sh
 
+# Install correct R package versions
+Rscript --vanilla scripts/install.R
+
 # Process RNAseq and Mutation matrix
 python scripts/initialize/process_sample_freeze.py
 
