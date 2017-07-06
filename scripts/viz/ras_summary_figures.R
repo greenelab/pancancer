@@ -26,14 +26,15 @@ results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
 
 # 1) Heatmap of the distribution of aberrant events across tumors
 heatmap_plot_file <- file.path(results_folder, "figures", "ras_heatmap.pdf")
+ras_heatmap_file <- file.path(results_folder, "figures", "all_ras_heatmap.pdf")
 heat_file <- file.path(results_folder, "summary_counts.csv")
 heat_df <- readr::read_csv(heat_file)
 
-heat_df <- heat_df %>% dplyr::mutate(RAS = HRAS_y + NRAS_y + KRAS_y) %>%
+heat_comb_df <- heat_df %>% dplyr::mutate(RAS = HRAS_y + NRAS_y + KRAS_y) %>%
   dplyr::mutate(RAS_gain = HRAS_gain_y + NRAS_gain_y + KRAS_gain_y)
 
-prop_matrix <- as.matrix(heat_df[, c("RAS_gain", "RAS")])
-rownames(prop_matrix) <- heat_df$DISEASE
+prop_matrix <- as.matrix(heat_comb_df[, c("RAS_gain", "RAS")])
+rownames(prop_matrix) <- heat_comb_df$DISEASE
 colnames(prop_matrix) <- c("Gain", "Mutation")
 
 # All diseases that are used in building the classifier
@@ -63,6 +64,25 @@ pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
          number_color = "black", annotation_col = classifier,
          annotation_names_col = FALSE, legend = FALSE,
          filename = heatmap_plot_file,
+         width = 8, height = 2)
+
+# Plot heatmap without collapsing Ras genes
+heat_ras_df <- heat_df %>% dplyr::select(c('NRAS_gain_y', "HRAS_gain_y",
+                                           "KRAS_gain_y", 'NRAS_y', 'HRAS_y',
+                                           'KRAS_y'))
+colnames(heat_ras_df) <- c("NRAS Gain", "HRAS Gain", "KRAS Gain",
+                           "NRAS", "HRAS", "KRAS")
+heat_ras_df <- as.data.frame(heat_ras_df)
+rownames(heat_ras_df) <- heat_comb_df$DISEASE
+heat_ras_df <- heat_ras_df[order(heat_ras_df$KRAS, decreasing = TRUE), ]
+
+# Plot and save heatmap
+pheatmap(t(heat_ras_df * 100), scale = "none", cluster_rows = FALSE,
+         cluster_cols = FALSE,
+         display_numbers = TRUE, number_format = "%.0f", fontsize_number = 8,
+         number_color = "black", annotation_col = classifier,
+         annotation_names_col = FALSE, legend = FALSE,
+         filename = ras_heatmap_file,
          width = 8, height = 2)
 
 # 2) Coefficients contributing to the model
