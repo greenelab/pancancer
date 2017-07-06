@@ -64,6 +64,7 @@ python scripts/map_mutation_class.py --scores 'classifiers/RAS_noTHCASKCM' \
         --genes 'classifiers/RAS/ras_genes.csv'
 
 # 9. Plot Ras, NF1, and BRAF results
+python scripts/ras_count_heatmaps.py
 Rscript --vanilla scripts/viz/ras_summary_figures.R
 Rscript --vanilla scripts/viz/nf1_summary_figures.R
 Rscript --vanilla scripts/viz/braf_summary_figures.R
