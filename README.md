@@ -2,8 +2,6 @@
 
 **Gregory Way and Casey Greene**
 
-[![DOI](https://zenodo.org/badge/68009604.svg)](https://zenodo.org/badge/latestdoi/68009604)
-
 ## Detecting system-wide changes in whole transcriptomes
 
 A transcriptome can describe the total state of a tumor at a snapshot
@@ -18,12 +16,26 @@ classifiers to detect aberration in _TP53_ and Ras signalling.
 
 ### TP53
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.400250.svg)](https://doi.org/10.5281/zenodo.400250)
+
 We are interested in building a classifier to detect _TP53_ inactivation.
 _TP53_ is the most highly mutated gene in cancer and regulates several important
 tumorigenic processes such as apoptosis and DNA damage response (DDR). We also
 include a pipeline to build and evaluate a machine learning _TP53_ classifier.
 
 ### Ras Signaling
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.824139.svg)](https://doi.org/10.5281/zenodo.824139)
+
+The Ras signaling pathway is a major player in cancer development and
+treatment resistance. We observed that nearly 60% of all tumors in TCGA
+have mutations or copy number alterations in at least one of 38 core pathway
+genes. We applied our approach to detect Ras pathway hyperactivation using
+_KRAS_, _HRAS_, and _NRAS_ gain of function mutations and copy number gains
+to define our gold standard Ras hyperactivation events. We train a supervised
+classifier to detect when a tumor has hyperactive Ras.
+
+#### Ras signaling classifier identifies phenocopying NF1 loss of function events
 
 We have previously described the ability of a machine learning classifier to
 detect an _NF1_ inactivation signature using Glioblastoma data
