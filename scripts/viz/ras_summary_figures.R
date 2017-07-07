@@ -67,9 +67,9 @@ pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
          width = 8, height = 2)
 
 # Plot heatmap without collapsing Ras genes
-heat_ras_df <- heat_df %>% dplyr::select(c('NRAS_gain_y', "HRAS_gain_y",
-                                           "KRAS_gain_y", 'NRAS_y', 'HRAS_y',
-                                           'KRAS_y'))
+heat_ras_df <- heat_df %>% dplyr::select(c("NRAS_gain_y", "HRAS_gain_y",
+                                           "KRAS_gain_y", "NRAS_y", "HRAS_y",
+                                           "KRAS_y"))
 colnames(heat_ras_df) <- c("NRAS Gain", "HRAS Gain", "KRAS Gain",
                            "NRAS", "HRAS", "KRAS")
 heat_ras_df <- as.data.frame(heat_ras_df)
@@ -229,7 +229,7 @@ ggplot(final_df, aes(Weight, ..count.., fill = Class)) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, 1)) +
   scale_y_continuous(expand = c(0, 0)) + base_theme +
   theme(legend.position = c(1.1, 0.65),
-        legend.background = element_rect(fill = alpha('white', 0)),
+        legend.background = element_rect(fill = alpha("white", 0)),
         legend.text = element_text(size = 7),
         plot.margin = unit(c(0.2, 1.5, 0, 0.1),"cm"),
         axis.text.x = element_text(size = 9),
@@ -257,16 +257,16 @@ nuc_df <- mut_weight_df %>%
 
 aa_df <- aa_df[order(aa_df$count, decreasing = TRUE),]
 nuc_df <- nuc_df[order(nuc_df$count, decreasing = TRUE),]
-write.table(aa_df, file = file.path(results_folder, 'tables',
-                                    'amino_acid_mutation_scores.tsv'),
-            sep = '\t', row.names = FALSE)
-write.table(nuc_df, file = file.path(results_folder, 'tables',
-                                     'nucleotide_mutation_scores.tsv'),
-            sep = '\t', row.names = FALSE)
+write.table(aa_df, file = file.path(results_folder, "tables",
+                                    "amino_acid_mutation_scores.tsv"),
+            sep = "\t", row.names = FALSE)
+write.table(nuc_df, file = file.path(results_folder, "tables",
+                                     "nucleotide_mutation_scores.tsv"),
+            sep = "\t", row.names = FALSE)
 
 # Plot summary distribution of variant classes prediction scores
 braf_df <- final_df[complete.cases(final_df), ]
-braf_df <- braf_df[braf_df$HGVSp == 'p.Val600Glu', ]
+braf_df <- braf_df[braf_df$HGVSp == "p.Val600Glu", ]
 
 braf_df$Disease <- dplyr::recode(braf_df$Disease,
                                  "BLCA" = "Other", "CHOL" = "Other",
@@ -274,8 +274,8 @@ braf_df$Disease <- dplyr::recode(braf_df$Disease,
                                  "KIRP" = "Other", "LGG" = "Other",
                                  "READ" = "Other")
 
-braf_plot_file <- file.path(results_folder, 'figures',
-                            'brafv600e_distribution.svg')
+braf_plot_file <- file.path(results_folder, "figures",
+                            "brafv600e_distribution.svg")
 braf_plot <- ggplot(braf_df, aes(Weight, fill = Disease)) +
   geom_density(alpha = 0.4) + theme_bw() +
   ylab("Density") + xlab("BRAFV600E Classifier Score")
@@ -292,9 +292,9 @@ ras_summary_count_df <- readr::read_tsv(ras_count_file,
                                                          "weight" = "d",
                                                          "total_status" = "c"))
 ras_summary_count_df$copy_count <- factor(ras_summary_count_df$copy_count,
-                                          levels = c('0', '1', '2', '3','4', 
-                                                     '5', '6', '7', '8', '9',
-                                                     '10'))
+                                          levels = c("0", "1", "2", "3","4", 
+                                                     "5", "6", "7", "8", "9",
+                                                     "10"))
 ras_summary_count_df$copy_count <-
   dplyr::recode(ras_summary_count_df$copy_count, "6" = ">6", "7" = ">6",
                 "8" = ">6", "9" = ">6", "10" = ">6")
@@ -310,7 +310,7 @@ cop_ras_count <- ras_summary_count_df %>% group_by(copy_count) %>% tally()
 
 # Combine to get summary tables
 mut_sum <- dplyr::inner_join(mut_ras_count, mut_ras_prop, by = "mutation_count")
-cop_sum <- dplyr::inner_join(cop_ras_count, cop_ras_prop, by = 'copy_count')
+cop_sum <- dplyr::inner_join(cop_ras_count, cop_ras_prop, by = "copy_count")
 
 med_weight <- median(ras_summary_count_df$weight)
 
@@ -330,7 +330,7 @@ mut <- ggplot(ras_summary_count_df, aes(x = mutation_count, y = weight)) +
   scale_fill_manual(name = "RAS Status", values = c("#3B9AB2", "#F2300F"),
                     labels = c("0" = "Wild-Type", "1" = "Hyperactive")) +
   geom_text(data = mut_sum, aes(x = mutation_count, y = 1.06,
-                                label = paste0(n, '\n', mean_ras))) +
+                                label = paste0(n, "\n", mean_ras))) +
   classifier_count_theme +
   labs(list(x = "Number of Ras Pathway Mutations", y = "RAS Classifier Score"))
 
@@ -340,7 +340,7 @@ cop <- ggplot(ras_summary_count_df, aes(x = copy_count, y = weight)) +
   scale_fill_manual(name = "RAS Status", values = c("#3B9AB2", "#F2300F"),
                     labels = c("0" = "Wild-Type", "1" = "Hyperactive")) +
   geom_text(data = cop_sum, aes(x = copy_count, y = 1.06,
-                                label = paste0(n, '\n', mean_ras))) +
+                                label = paste0(n, "\n", mean_ras))) +
   classifier_count_theme +
   labs(list(x = "Number of Ras Pathway Copy Number Events",
             y = "RAS Classifier Score"))
@@ -364,23 +364,25 @@ auprc_violin <- ggplot(metric_ranks, aes(y = AUPRC, x = paste(ras),
                                         fill = paste(ras))) +
   geom_violin() +
   theme(legend.position = "none") +
-  xlab('Ras Pathway Status')
+  xlab("") +
+  scale_x_discrete(labels = c("0" = "Other", "1" = "Ras Pathway Genes"))
 
 auroc_violin <- ggplot(metric_ranks, aes(y = AUROC, x = paste(ras),
                                          fill = paste(ras))) +
   geom_violin() +
   theme(legend.position = "none") + 
   geom_hline(yintercept = 0.5, linetype = "dashed") +
-  xlab('Ras Pathway Status')
+  xlab("") +
+  scale_x_discrete(labels = c("0" = "Other", "1" = "Ras Pathway Genes"))
 
 auprc_plot <- ggplot(metric_ranks, aes(x = `AUPRC Rank`, y = AUPRC)) +
-  geom_point(color = 'darkgrey') +
-  geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = 'red')
+  geom_point(color = "darkgrey") +
+  geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = "red")
 
 auroc_plot <- ggplot(metric_ranks, aes(x = `AUROC Rank`, y = AUROC)) +
-  geom_point(color = 'darkgrey') +
+  geom_point(color = "darkgrey") +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
-  geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = 'red')
+  geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = "red")
 
 # Get the top genes by both metrics
 top_auprc_genes <- metric_ranks[order(metric_ranks$`AUPRC Rank`), 1:2]
@@ -395,16 +397,16 @@ auroc_plot <- auroc_plot +
   annotation_custom(top_auroc_table_grob, xmin = 10000,
                     xmax = 15000, ymin = 0.6, ymax = 0.95)
 
-auprc_distribution_fig <- file.path(results_folder, 'figures', 
-                                    'auprc_distribution.svg')
+auprc_distribution_fig <- file.path(results_folder, "figures", 
+                                    "auprc_distribution.svg")
 
 svg(auprc_distribution_fig, width = 11.5, height = 7.5)
-plot_grid(auprc_violin, auprc_plot, align = "h", ncol = 2)
+plot_grid(auprc_plot, auprc_violin, align = "h", ncol = 2)
 dev.off()
 
-auroc_distribution_fig <- file.path(results_folder, 'figures', 
-                                    'auroc_distribution.svg')
+auroc_distribution_fig <- file.path(results_folder, "figures", 
+                                    "auroc_distribution.svg")
 
 svg(auroc_distribution_fig, width = 11, height = 7.5)
-plot_grid(auroc_violin, auroc_plot, align = "h", ncol = 2)
+plot_grid(auroc_plot, auroc_violin, align = "h", ncol = 2)
 dev.off()
