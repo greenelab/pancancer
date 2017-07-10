@@ -286,7 +286,7 @@ dev.off()
 
 # 5) RAS Summary Counts Distribution
 ras_count_file <- file.path(results_folder, "tables",
-                            "ras_events_counts_per_sample.tsv")
+                            "ras_events_per_sample.tsv")
 ras_summary_count_df <- readr::read_tsv(ras_count_file,
                                         col_types = cols(.default = "c",
                                                          "weight" = "d",
@@ -328,21 +328,22 @@ mut <- ggplot(ras_summary_count_df, aes(x = mutation_count, y = weight)) +
   geom_boxplot(aes(fill = total_status)) +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
   scale_fill_manual(name = "RAS Status", values = c("#3B9AB2", "#F2300F"),
-                    labels = c("0" = "Wild-Type", "1" = "Hyperactive")) +
+                    labels = c("0" = "Wild-Type", "1" = "Activated")) +
   geom_text(data = mut_sum, aes(x = mutation_count, y = 1.06,
                                 label = paste0(n, "\n", mean_ras))) +
   classifier_count_theme +
-  labs(list(x = "Number of Ras Pathway Mutations", y = "RAS Classifier Score"))
+  labs(list(x = "Number of Other Ras Pathway Mutations",
+            y = "RAS Classifier Score"))
 
 cop <- ggplot(ras_summary_count_df, aes(x = copy_count, y = weight)) +
   geom_boxplot(aes(fill = total_status)) +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
   scale_fill_manual(name = "RAS Status", values = c("#3B9AB2", "#F2300F"),
-                    labels = c("0" = "Wild-Type", "1" = "Hyperactive")) +
+                    labels = c("0" = "Wild-Type", "1" = "Activated")) +
   geom_text(data = cop_sum, aes(x = copy_count, y = 1.06,
                                 label = paste0(n, "\n", mean_ras))) +
   classifier_count_theme +
-  labs(list(x = "Number of Ras Pathway Copy Number Events",
+  labs(list(x = "Number of Other Ras Pathway Copy Number Events",
             y = "RAS Classifier Score"))
 
 ras_counts_fig <- file.path(results_folder, "figures", "ras_events_counts.svg")

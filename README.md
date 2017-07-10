@@ -30,10 +30,10 @@ include a pipeline to build and evaluate a machine learning _TP53_ classifier.
 The Ras signaling pathway is a major player in cancer development and
 treatment resistance. We observed that nearly 60% of all tumors in TCGA
 have mutations or copy number alterations in at least one of 38 core pathway
-genes. We applied our approach to detect Ras pathway hyperactivation using
+genes. We applied our approach to detect Ras pathway activation using
 _KRAS_, _HRAS_, and _NRAS_ gain of function mutations and copy number gains
 to define our gold standard Ras hyperactivation events. We train a supervised
-classifier to detect when a tumor has hyperactive Ras.
+classifier to detect when a tumor has activated Ras.
 
 #### Ras signaling classifier identifies phenocopying NF1 loss of function events
 

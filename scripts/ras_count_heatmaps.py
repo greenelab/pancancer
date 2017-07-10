@@ -19,11 +19,11 @@ import seaborn as sns
 # In[3]:
 
 # Load Datasets
-mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
-sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
-copy_loss_file = os.path.join('data', 'copy_number_loss_status.tsv')
-copy_gain_file = os.path.join('data', 'copy_number_gain_status.tsv')
-cancer_genes_file = os.path.join('data', 'vogelstein_cancergenes.tsv')
+mut_file = os.path.join('..', 'data', 'pancan_mutation_freeze.tsv')
+sample_freeze_file = os.path.join('..', 'data', 'sample_freeze.tsv')
+copy_loss_file = os.path.join('..', 'data', 'copy_number_loss_status.tsv')
+copy_gain_file = os.path.join('..', 'data', 'copy_number_gain_status.tsv')
+cancer_genes_file = os.path.join('..', 'data', 'vogelstein_cancergenes.tsv')
 
 mutation_df = pd.read_table(mut_file, index_col=0)
 sample_freeze = pd.read_table(sample_freeze_file, index_col=0)
@@ -35,7 +35,7 @@ cancer_genes_df = pd.read_table(cancer_genes_file)
 # In[4]:
 
 # Load Ras Pathway Genes
-results_path= os.path.join('classifiers', 'RAS')
+results_path= os.path.join('..', 'classifiers', 'RAS')
 genes_file = os.path.join(results_path, 'ras_genes.csv')
 genes_df = pd.read_table(genes_file)
 
@@ -203,13 +203,20 @@ decisions_df.head()
 
 # In[26]:
 
-total_ras_mutations = pd.DataFrame(mutation_sub_df.sum(axis=1), columns=['mutation_count'])
-total_ras_copy_events = pd.DataFrame(copy_df.sum(axis=1), columns=['copy_count'])
-total_ras_all = pd.DataFrame(comb_heat_df.sum(axis=1), columns=['all_count'])
-total_ras_all.index = comb_heat_df['SAMPLE_BARCODE']
+other_ras_df = mutation_sub_df.drop(['KRAS', 'HRAS', 'NRAS'], axis=1)
+other_ras_copy_df = copy_df.drop(['KRAS', 'HRAS', 'NRAS'], axis=1)
+other_ras_all_df = comb_heat_df.drop(['KRAS', 'HRAS', 'NRAS'], axis=1)
 
 
 # In[27]:
+
+total_ras_mutations = pd.DataFrame(other_ras_df.sum(axis=1), columns=['mutation_count'])
+total_ras_copy_events = pd.DataFrame(other_ras_copy_df.sum(axis=1), columns=['copy_count'])
+total_ras_all = pd.DataFrame(other_ras_all_df.sum(axis=1), columns=['all_count'])
+total_ras_all.index = comb_heat_df['SAMPLE_BARCODE']
+
+
+# In[28]:
 
 # Define output summary of mutation, copy, and total counts per sample by Ras pathway
 count_summary = (
@@ -222,12 +229,12 @@ count_summary.ix[count_summary['SAMPLE_BARCODE'].isin(hyper_samples),
 count_summary.head()
 
 
-# In[28]:
+# In[29]:
 
 count_summary['mutation_count'].value_counts()
 
 
-# In[29]:
+# In[30]:
 
 count_summary = total_ras_copy_events.merge(count_summary, left_index=True,
                                             right_on='SAMPLE_BARCODE')
@@ -240,7 +247,7 @@ count_summary = (
 count_summary.head()
 
 
-# In[30]:
+# In[31]:
 
 count_summary_file = os.path.join(results_path, 'tables',
                                   'ras_events_per_sample.tsv')
