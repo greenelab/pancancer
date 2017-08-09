@@ -57,8 +57,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.linear_model import SGDClassifier
-from sklearn.model_selection import train_test_split, GridSearchCV, \
-                                    cross_val_predict
+from sklearn.model_selection import train_test_split, cross_val_predict
+from dask_searchcv import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from statsmodels.robust.scale import mad

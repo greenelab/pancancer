@@ -12,3 +12,5 @@ dependencies:
 - anaconda::python=3.5.2
 - anaconda::statsmodels=0.8.0
 - anaconda::numexpr=2.6.2
+- conda-forge::dask-searchcv=0.0.2
+
