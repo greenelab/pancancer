@@ -1,8 +1,6 @@
 data/*
-figures/
 classifiers/
 .Rhistory
 .ipynb_checkpoints/
-*.ipynb
 __pycache__/
 .checkpoint/
