@@ -153,3 +153,33 @@ add_arrow_label <- function(p, x, y, label, offset = c(0, 0, 0, 0)) {
              size = 0.18, arrow = arrow(length = unit(0.05, "cm")))
   return(p)
 }
+
+get_boot <- function(weight, low = TRUE, B = 1000, min_samples = 5) {
+  # Function to input into a `dplyr::summarize()` call
+  # The function will compute a bootstrap estimate of the mean as well as
+  # the resulting 95% bootstrapped confidence intervals. The call to summarize
+  # requires a single returned numeric value, hence the separation of low_ and
+  # high_ returned objects.
+  #
+  # Arguments:
+  #    weight: a vector of Ras pathway classifier predictions
+  #    low: boolean of whether to return 95% low or high confidence intervals
+  #    B: integer of how many bootstrap samples to take, defaults to 1000
+  #    min_samples: bootstrapping does not work well with low sample sizes, how
+  #                 many samples are required to calculate a bootstrap estimate
+
+  if (length(weight) < min_samples) {
+    return(NA)
+  }
+
+  boot_obj <- Hmisc::smean.cl.boot(weight, B = B)
+
+  low_ <- as.numeric(boot_obj[2])
+  high_ <- as.numeric(boot_obj[3])
+
+  if (low) {
+    return(low_)
+  } else {
+    return(high_)
+  }
+}

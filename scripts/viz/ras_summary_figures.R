@@ -19,6 +19,7 @@ library(ggplot2)
 library(readr)
 library(cowplot)
 library(gridExtra)
+library(Hmisc)
 source(file.path("scripts", "util", "pancancer_util.R"))
 
 results_folder <- file.path("classifiers", "RAS")
@@ -244,16 +245,19 @@ mut_weight_df <- mut_weight_df[mut_weight_df$hypermutated != 1, ]
 
 aa_df <- mut_weight_df %>%
   group_by(HGVSp, Variant_Classification, Hugo_Symbol) %>%
-  summarise(Mean = mean(weight),
-            low_CI = quantile(weight, 0.05),
-            high_CI = quantile(weight, 0.95),
-            count = n())
+  summarise(Mean = mean(weight, na.rm = TRUE),
+            SD = sd(weight, na.rm = TRUE),
+            count = n(),
+            low_CI = get_boot(weight),
+            high_CI = get_boot(weight, low = FALSE))
+
 nuc_df <- mut_weight_df %>%
   group_by(HGVSc, Variant_Classification, Hugo_Symbol) %>%
   summarise(Mean = mean(weight),
-            low_CI = quantile(weight, 0.05),
-            high_CI = quantile(weight, 0.95),
-            count = n())
+            SD = sd(weight, na.rm = TRUE),
+            count = n(),
+            low_CI = get_boot(weight),
+            high_CI = get_boot(weight, low = FALSE))
 
 aa_df <- aa_df[order(aa_df$count, decreasing = TRUE),]
 nuc_df <- nuc_df[order(nuc_df$count, decreasing = TRUE),]
