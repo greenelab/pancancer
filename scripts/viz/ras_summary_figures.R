@@ -365,12 +365,22 @@ metric_ranks <- readr::read_tsv(perf_metric_file,
                                                  "AUROC Rank" = "i",
                                                  "AUPRC Rank" = "i"))
 
-auprc_violin <- ggplot(metric_ranks, aes(y = AUPRC, x = paste(ras),
+colnames(metric_ranks) <- c("Gene", "AUPR", "AUPR Rank", "ras", "AUROC",
+                            "AUROC Rank")
+
+aupr_violin <- ggplot(metric_ranks, aes(y = AUPR, x = paste(ras),
                                         fill = paste(ras))) +
   geom_violin() +
   theme(legend.position = "none") +
   xlab("") +
-  scale_x_discrete(labels = c("0" = "Other", "1" = "Ras Pathway Genes"))
+  ylab("AUPR") +
+  scale_x_discrete(labels = c("0" = "Other\nGenes",
+                              "1" = "Ras Pathway\nGenes")) +
+  theme(axis.line.x = element_line(),
+        axis.line.y = element_line(),
+        axis.ticks = element_line(),
+        axis.title = element_text(size = rel(2)),
+        axis.text = element_text(size = rel(1.5)))
 
 auroc_violin <- ggplot(metric_ranks, aes(y = AUROC, x = paste(ras),
                                          fill = paste(ras))) +
@@ -380,9 +390,16 @@ auroc_violin <- ggplot(metric_ranks, aes(y = AUROC, x = paste(ras),
   xlab("") +
   scale_x_discrete(labels = c("0" = "Other", "1" = "Ras Pathway Genes"))
 
-auprc_plot <- ggplot(metric_ranks, aes(x = `AUPRC Rank`, y = AUPRC)) +
+aupr_plot <- ggplot(metric_ranks, aes(x = `AUPR Rank`, y = AUPR)) +
   geom_point(color = "darkgrey") +
-  geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = "red")
+  geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = "red") +
+  xlab("AUPR Rank") +
+  ylab("AUPR") +
+  theme(axis.line.x = element_line(),
+        axis.line.y = element_line(),
+        axis.ticks = element_line(),
+        axis.title = element_text(size = rel(2)),
+        axis.text = element_text(size = rel(1.5)))
 
 auroc_plot <- ggplot(metric_ranks, aes(x = `AUROC Rank`, y = AUROC)) +
   geom_point(color = "darkgrey") +
@@ -390,10 +407,12 @@ auroc_plot <- ggplot(metric_ranks, aes(x = `AUROC Rank`, y = AUROC)) +
   geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = "red")
 
 # Get the top genes by both metrics
-top_auprc_genes <- metric_ranks[order(metric_ranks$`AUPRC Rank`), 1:2]
-top_auprc_table_grob <- tableGrob(top_auprc_genes[1:20, ])
-auprc_plot <- auprc_plot +
-  annotation_custom(top_auprc_table_grob, xmin = 10000,
+top_aupr_genes <- metric_ranks[order(metric_ranks$`AUPR Rank`), 1:2]
+top_aupr_genes <- top_aupr_genes %>% mutate(AUPR = round(AUPR, 2))
+
+top_aupr_table_grob <- tableGrob(top_aupr_genes[1:15, ])
+aupr_plot <- aupr_plot +
+  annotation_custom(top_aupr_table_grob, xmin = 10000,
                     xmax = 15000, ymin = 0.1, ymax = 0.45)
 
 top_auroc_genes <- metric_ranks[order(metric_ranks$`AUROC Rank`), c(1, 5)]
@@ -402,11 +421,11 @@ auroc_plot <- auroc_plot +
   annotation_custom(top_auroc_table_grob, xmin = 10000,
                     xmax = 15000, ymin = 0.6, ymax = 0.95)
 
-auprc_distribution_fig <- file.path(results_folder, "figures", 
-                                    "auprc_distribution.svg")
+aupr_distribution_fig <- file.path(results_folder, "figures", 
+                                   "aupr_distribution.pdf")
 
-svg(auprc_distribution_fig, width = 11.5, height = 7.5)
-plot_grid(auprc_plot, auprc_violin, align = "h", ncol = 2)
+pdf(aupr_distribution_fig, width = 11.5, height = 7.5)
+plot_grid(aupr_plot, aupr_violin, align = "h", ncol = 2)
 dev.off()
 
 auroc_distribution_fig <- file.path(results_folder, "figures", 
@@ -415,3 +434,18 @@ auroc_distribution_fig <- file.path(results_folder, "figures",
 svg(auroc_distribution_fig, width = 11, height = 7.5)
 plot_grid(auroc_plot, auroc_violin, align = "h", ncol = 2)
 dev.off()
+
+# T-Test for AUPR between Ras pathway genes and Other genes
+ras_genes_aupr <- metric_ranks %>%
+  dplyr::filter(ras == 1) %>%
+  dplyr::select(AUPR)
+
+other_genes_aupr <- metric_ranks %>%
+  dplyr::filter(ras == 0) %>%
+  dplyr::select(AUPR)
+
+t_test_file <- file.path("classifiers", "RAS", "tables",
+                         "ras_variant_AUPR_ttest.txt")
+sink(t_test_file)
+t.test(ras_genes_aupr$AUPR, other_genes_aupr$AUPR, alternative = "greater")
+sink()
