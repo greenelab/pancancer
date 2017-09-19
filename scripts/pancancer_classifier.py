@@ -41,6 +41,8 @@ Where GENES is a comma separated string. There are also optional arguments:
                             default: False if flag omitted
     --keep_intermediate store_true: keep intermediate roc curve items
                             default: False if flag omitted
+    --x_matrix          string of which feature matrix to use
+                            default: raw
 
 Output:
 ROC curves, AUROC across diseases, and classifier coefficients
@@ -103,6 +105,8 @@ parser.add_argument('-v', '--remove_hyper', action='store_true',
                     help='Remove hypermutated samples')
 parser.add_argument('-k', '--keep_intermediate', action='store_true',
                     help='Keep intermediate ROC values for plotting')
+parser.add_argument('-x', '--x_matrix', default='raw',
+                    help='Filename of features to use in model')
 args = parser.parse_args()
 
 # Load command arguments
@@ -123,6 +127,7 @@ alt_diseases = args.alt_diseases.split(',')
 alt_folder = args.alt_folder
 remove_hyper = args.remove_hyper
 keep_inter = args.keep_intermediate
+x_matrix = args.x_matrix
 
 warnings.filterwarnings('ignore',
                         message='Changing the shape of non-C contiguous array')
@@ -147,11 +152,11 @@ if not os.path.exists(disease_folder):
 count_table_file = os.path.join(base_folder, 'summary_counts.csv')
 cv_heatmap_file = os.path.join(base_folder, 'cv_heatmap.svg')
 full_roc_file = os.path.join(base_folder, 'all_disease_roc.svg')
-full_prc_file = os.path.join(base_folder, 'all_disease_prc.svg')
+full_pr_file = os.path.join(base_folder, 'all_disease_pr.svg')
 disease_roc_file = os.path.join(base_folder, 'disease', 'classifier_roc_')
-disease_prc_file = os.path.join(base_folder, 'disease', 'classifier_prc_')
+disease_pr_file = os.path.join(base_folder, 'disease', 'classifier_pr_')
 dis_summary_auroc_file = os.path.join(base_folder, 'disease_auroc.svg')
-dis_summary_auprc_file = os.path.join(base_folder, 'disease_auprc.svg')
+dis_summary_aupr_file = os.path.join(base_folder, 'disease_aupr.svg')
 classifier_file = os.path.join(base_folder, 'classifier_coefficients.tsv')
 roc_results_file = os.path.join(base_folder, 'pancan_roc_results.tsv')
 
@@ -161,25 +166,32 @@ alt_gene_base = 'alt_gene_{}_alt_disease_{}'.format(
 alt_count_table_file = os.path.join(base_folder, 'alt_summary_counts.csv')
 alt_gene_auroc_file = os.path.join(base_folder,
                                    '{}_auroc_bar.svg'.format(alt_gene_base))
-alt_gene_auprc_file = os.path.join(base_folder,
-                                   '{}_auprc_bar.svg'.format(alt_gene_base))
+alt_gene_aupr_file = os.path.join(base_folder,
+                                  '{}_aupr_bar.svg'.format(alt_gene_base))
 alt_gene_summary_file = os.path.join(base_folder,
                                      '{}_summary.tsv'.format(alt_gene_base))
 
 # Load Datasets
-expr_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
+if x_matrix == 'raw':
+    expr_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
+else:
+    expr_file = x_matrix
+
 mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
 sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
 mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 
-rnaseq_df = pd.read_table(expr_file, index_col=0)
+rnaseq_full_df = pd.read_table(expr_file, index_col=0)
 mutation_df = pd.read_table(mut_file, index_col=0)
 sample_freeze = pd.read_table(sample_freeze_file, index_col=0)
 mut_burden = pd.read_table(mut_burden_file)
 
 # Construct data for classifier
 common_genes = set(mutation_df.columns).intersection(genes)
-common_genes = list(common_genes.intersection(rnaseq_df.columns))
+if x_matrix == 'raw':
+    common_genes = list(common_genes.intersection(rnaseq_full_df.columns))
+else:
+    common_genes = list(common_genes)
 
 y = mutation_df[common_genes]
 missing_genes = set(genes).difference(common_genes)
@@ -189,7 +201,8 @@ if len(common_genes) != len(genes):
                   'are {}'.format(missing_genes), category=Warning)
 
 if drop:
-    rnaseq_df.drop(common_genes, axis=1, inplace=True)
+    if x_matrix == 'raw':
+        rnaseq_full_df.drop(common_genes, axis=1, inplace=True)
 
 # Incorporate copy number for gene activation/inactivation
 if copy_number:
@@ -230,6 +243,10 @@ if diseases[0] == 'Auto':
 
 # Load mutation burden and process covariates
 y_df = y[y.DISEASE.isin(diseases)].total_status
+common_samples = list(set(y_df.index) & set(rnaseq_full_df.index))
+
+y_df = y_df.loc[common_samples]
+rnaseq_df = rnaseq_full_df.loc[y_df.index, :]
 
 if remove_hyper:
     burden_filter = mut_burden['log10_mut'] < 5 * mut_burden['log10_mut'].std()
@@ -249,13 +266,15 @@ covar = covar.drop('total_status', axis=1)
 # How cross validation splits will be balanced and stratified
 y_df = y_df.loc[y_sub.index]
 strat = y_sub.str.cat(y_df.astype(str))
+x_df = rnaseq_df.loc[y_df.index, :]
 
 # Subset x matrix to MAD genes and scale
-x_df = rnaseq_df.loc[y_df.index, :]
-med_dev = pd.DataFrame(mad(x_df), index=x_df.columns)
-mad_genes = med_dev.sort_values(by=0, ascending=False)\
-                   .iloc[0:num_features_kept].index.tolist()
-x_df = x_df.loc[:, mad_genes]
+if x_matrix == 'raw':
+    med_dev = pd.DataFrame(mad(x_df), index=x_df.columns)
+    mad_genes = med_dev.sort_values(by=0, ascending=False)\
+                       .iloc[0:num_features_kept].index.tolist()
+    x_df = x_df.loc[:, mad_genes]
+
 fitted_scaler = StandardScaler().fit(x_df)
 x_df_update = pd.DataFrame(fitted_scaler.transform(x_df),
                            columns=x_df.columns)
@@ -350,20 +369,20 @@ plt.tight_layout()
 plt.savefig(full_roc_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
-# Plot PRC
+# Plot PR
 sns.set_style("whitegrid")
 plt.figure(figsize=(2.7, 2.4))
-total_auprc = {}
+total_aupr = {}
 colors = ['blue', 'green', 'orange']
 idx = 0
 for label, metrics in [('Training', metrics_train), ('Testing', metrics_test),
                        ('CV', metrics_cv)]:
 
-    prc_df = metrics['prc_df']
-    plt.plot(prc_df.recall, prc_df.precision,
-             label='{} (AUPRC = {:.1%})'.format(label, metrics['auprc']),
+    pr_df = metrics['pr_df']
+    plt.plot(pr_df.recall, pr_df.precision,
+             label='{} (AUPR = {:.1%})'.format(label, metrics['aupr']),
              linewidth=2, c=colors[idx])
-    total_auprc[label] = metrics['auprc']
+    total_aupr[label] = metrics['aupr']
     idx += 1
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
@@ -374,7 +393,7 @@ plt.tick_params(labelsize=8)
 plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
            fontsize=7.5)
 plt.tight_layout()
-plt.savefig(full_prc_file, dpi=600, format='svg', bbox_inches='tight')
+plt.savefig(full_pr_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
 # disease specific performance
@@ -424,25 +443,25 @@ for disease in diseases:
     disease_metrics[disease] = [met_train_dis, met_test_dis, met_cv_dis]
 
 disease_auroc = {}
-disease_auprc = {}
+disease_aupr = {}
 for disease, metrics_val in disease_metrics.items():
     met_train, met_test, met_cv = metrics_val
-    disease_prc_sub_file = '{}_pred_{}.svg'.format(disease_prc_file, disease)
+    disease_pr_sub_file = '{}_pred_{}.svg'.format(disease_pr_file, disease)
     disease_roc_sub_file = '{}_pred_{}.svg'.format(disease_roc_file, disease)
 
-    # Plot disease specific PRC
+    # Plot disease specific PR
     plt.figure(figsize=(2.7, 2.4))
-    auprc = []
+    aupr = []
     idx = 0
     for label, metrics in [('Training', met_train), ('Testing', met_test),
                            ('CV', met_cv)]:
-        prc_df = metrics['prc_df']
-        plt.plot(prc_df.recall, prc_df.precision,
-                 label='{} (AUPRC = {:.1%})'.format(label, metrics['auprc']),
+        pr_df = metrics['pr_df']
+        plt.plot(pr_df.recall, pr_df.precision,
+                 label='{} (AUPR = {:.1%})'.format(label, metrics['aupr']),
                  linewidth=2, c=colors[idx])
-        auprc.append(metrics['auprc'])
+        aupr.append(metrics['aupr'])
         idx += 1
-    disease_auprc[disease] = auprc
+    disease_aupr[disease] = aupr
 
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -453,7 +472,7 @@ for disease, metrics_val in disease_metrics.items():
     plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
                fontsize=7.5)
     plt.tight_layout()
-    plt.savefig(disease_prc_sub_file, dpi=600, format='svg',
+    plt.savefig(disease_pr_sub_file, dpi=600, format='svg',
                 bbox_inches='tight')
     plt.close()
 
@@ -494,14 +513,14 @@ plt.tight_layout()
 plt.savefig(dis_summary_auroc_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
-disease_auprc_df = pd.DataFrame(disease_auprc, index=['Train', 'Test',
-                                                      'Cross Validation']).T
-disease_auprc_df = disease_auprc_df.sort_values('Cross Validation',
-                                                ascending=False)
-ax = disease_auprc_df.plot(kind='bar', title='Disease Specific Performance')
-ax.set_ylabel('AUPRC')
+disease_aupr_df = pd.DataFrame(disease_aupr, index=['Train', 'Test',
+                                                    'Cross Validation']).T
+disease_aupr_df = disease_aupr_df.sort_values('Cross Validation',
+                                              ascending=False)
+ax = disease_aupr_df.plot(kind='bar', title='Disease Specific Performance')
+ax.set_ylabel('AUPR')
 plt.tight_layout()
-plt.savefig(dis_summary_auprc_file, dpi=600, format='svg', bbox_inches='tight')
+plt.savefig(dis_summary_aupr_file, dpi=600, format='svg', bbox_inches='tight')
 plt.close()
 
 # Save classifier coefficients
@@ -552,6 +571,10 @@ if alt_genes[0] is not 'None':
 
     # Subset data
     y_alt_df = y_alt[y_alt.DISEASE.isin(alt_diseases)].total_status
+    common_alt_samples = list(set(y_alt_df.index) & set(rnaseq_full_df.index))
+
+    y_alt_df = y_alt_df.loc[common_alt_samples]
+    rnaseq_alt_df = rnaseq_full_df.loc[y_alt_df.index, :]
 
     y_alt_matrix = mut_burden.merge(pd.DataFrame(y_alt_df), right_index=True,
                                     left_on='SAMPLE_BARCODE')\
@@ -567,8 +590,10 @@ if alt_genes[0] is not 'None':
     y_alt_df = y_alt_df.loc[y_alt_sub.index]
 
     # Process alternative x matrix
-    x_alt_df = rnaseq_df.loc[y_alt_df.index, :]
-    x_alt_df = x_alt_df.loc[:, mad_genes]
+    x_alt_df = rnaseq_alt_df.loc[y_alt_df.index, :]
+    if x_matrix == 'raw':
+        x_alt_df = x_alt_df.loc[:, mad_genes]
+
     x_alt_df_update = pd.DataFrame(fitted_scaler.transform(x_alt_df),
                                    columns=x_alt_df.columns)
     x_alt_df_update.index = x_alt_df.index
@@ -587,13 +612,13 @@ if alt_genes[0] is not 'None':
 
         # Subset full data if it has not been trained on
         if disease not in diseases:
-            x_sub = x_alt_df.ix[sample_dis]
+            x_sub = x_alt_df.loc[sample_dis]
             y_sub = y_alt_df[sample_dis]
             category = 'Full'
 
         # Only subset to the holdout set if data was trained on
         else:
-            x_sub = x_test.ix[x_test.index.isin(sample_dis)]
+            x_sub = x_test.loc[x_test.index.isin(sample_dis)]
             y_sub = y_test[y_test.index.isin(sample_dis)]
             category = 'Holdout'
 
@@ -616,11 +641,11 @@ if alt_genes[0] is not 'None':
     val_x_type.to_csv(alt_gene_summary_file, sep='\t')
 
     alt_disease_auroc = {}
-    alt_disease_auprc = {}
+    alt_disease_aupr = {}
     for disease, metrics_val in validation_metrics.items():
         met_test, met_cv = metrics_val
         alt_disease_auroc[disease] = [met_test['auroc'], met_cv['auroc']]
-        alt_disease_auprc[disease] = [met_test['auprc'], met_cv['auprc']]
+        alt_disease_aupr[disease] = [met_test['aupr'], met_cv['aupr']]
 
     # Plot alternative gene cancer-type specific AUROC plots
     alt_disease_auroc_df = pd.DataFrame(alt_disease_auroc,
@@ -635,16 +660,16 @@ if alt_genes[0] is not 'None':
                 bbox_inches='tight')
     plt.close()
 
-    # Plot alternative gene cancer-type specific AUPRC plots
-    alt_disease_auprc_df = pd.DataFrame(alt_disease_auprc,
-                                        index=['Hold Out', 'Full Data']).T
-    alt_disease_auprc_df = alt_disease_auprc_df.sort_values('Full Data',
-                                                            ascending=False)
-    ax = alt_disease_auprc_df.plot(kind='bar', title='Alt Gene Performance')
+    # Plot alternative gene cancer-type specific AUPR plots
+    alt_disease_aupr_df = pd.DataFrame(alt_disease_aupr,
+                                       index=['Hold Out', 'Full Data']).T
+    alt_disease_aupr_df = alt_disease_aupr_df.sort_values('Full Data',
+                                                          ascending=False)
+    ax = alt_disease_aupr_df.plot(kind='bar', title='Alt Gene Performance')
     ax.set_ylim([0, 1])
-    ax.set_ylabel('AUPRC')
+    ax.set_ylabel('AUPR')
     plt.tight_layout()
-    plt.savefig(alt_gene_auprc_file, dpi=600, format='svg',
+    plt.savefig(alt_gene_aupr_file, dpi=600, format='svg',
                 bbox_inches='tight')
     plt.close()
 
@@ -676,24 +701,24 @@ with open(os.path.join(base_folder, 'classifier_summary.txt'), 'w') as sum_fh:
     summarywriter.writerow(['Training AUROC:', metrics_train['auroc']])
     summarywriter.writerow(['Testing AUROC:', metrics_test['auroc']])
     summarywriter.writerow(['Cross Validation AUROC', metrics_cv['auroc']])
-    summarywriter.writerow(['Training AUPRC:', metrics_train['auprc']])
-    summarywriter.writerow(['Testing AUPRC:', metrics_test['auprc']])
-    summarywriter.writerow(['Cross Validation AUPRC:', metrics_cv['auprc']])
+    summarywriter.writerow(['Training AUPR:', metrics_train['aupr']])
+    summarywriter.writerow(['Testing AUPR:', metrics_test['aupr']])
+    summarywriter.writerow(['Cross Validation AUPR:', metrics_cv['aupr']])
     summarywriter.writerow(['Disease specific performance:'])
     for disease, auroc in disease_auroc.items():
         summarywriter.writerow(['', disease, 'Training AUROC:', auroc[0],
                                 'Testing AUROC:', auroc[1],
                                 'Cross Validation AUROC:', auroc[2]])
-    for disease, auprc in disease_auprc.items():
-        summarywriter.writerow(['', disease, 'Training AUPRC:', auprc[0],
-                                'Testing AUPRC:', auprc[1],
-                                'Cross Validation AUPRC:', auprc[2]])
+    for disease, aupr in disease_aupr.items():
+        summarywriter.writerow(['', disease, 'Training AUPR:', aupr[0],
+                                'Testing AUPR:', aupr[1],
+                                'Cross Validation AUPR:', aupr[2]])
     if alt_genes[0] is not 'None':
         summarywriter.writerow(['Alternate gene performance:'] + alt_genes)
         summarywriter.writerow(['Alternative gene AUROC:',
                                 str(alt_metrics_cv['auroc'])])
-        summarywriter.writerow(['Alternative gene AUPRC:',
-                                str(alt_metrics_cv['auprc'])])
+        summarywriter.writerow(['Alternative gene AUPR:',
+                                str(alt_metrics_cv['aupr'])])
         for alt_dis, alt_auroc in alt_disease_auroc.items():
             summarywriter.writerow(['', alt_dis,
                                     'Holdout AUROC:', alt_auroc[0],
@@ -703,10 +728,10 @@ with open(os.path.join(base_folder, 'classifier_summary.txt'), 'w') as sum_fh:
                                     str(val_x_type[alt_dis]['positives']),
                                     'num_negatives:',
                                     str(val_x_type[alt_dis]['negatives'])])
-        for alt_dis, alt_auprc in alt_disease_auprc.items():
+        for alt_dis, alt_aupr in alt_disease_aupr.items():
             summarywriter.writerow(['', alt_dis,
-                                    'Holdout AUPRC:', alt_auprc[0],
-                                    'Full Data AUPRC:', alt_auprc[1],
+                                    'Holdout AUPR:', alt_aupr[0],
+                                    'Full Data AUPR:', alt_aupr[1],
                                     'Category:', val_x_type[alt_dis]['class'],
                                     'num_positive:',
                                     str(val_x_type[alt_dis]['positives']),

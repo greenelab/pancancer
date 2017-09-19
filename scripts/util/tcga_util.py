@@ -10,7 +10,7 @@ Usage: For import only
 def get_threshold_metrics(y_true, y_pred, drop_intermediate=False,
                           disease='all'):
     """
-    Retrieve true/false positive rates and auroc for classification predictions
+    Retrieve true/false positive rates and auroc/aupr for class predictions
 
     Arguments:
     y_true - an array of gold standard mutation status
@@ -18,14 +18,14 @@ def get_threshold_metrics(y_true, y_pred, drop_intermediate=False,
     disease - a string that includes the corresponding TCGA study acronym
 
     Output:
-    A dictionary storing AUROC, a pandas dataframe of ROC data, and tissue
+    dict of AUROC, AUPR, pandas dataframes of ROC and PR data, and cancer-type
     """
     import pandas as pd
     from sklearn.metrics import roc_auc_score, roc_curve
     from sklearn.metrics import precision_recall_curve, average_precision_score
 
     roc_columns = ['fpr', 'tpr', 'threshold']
-    prc_columns = ['precision', 'recall', 'threshold']
+    pr_columns = ['precision', 'recall', 'threshold']
 
     if drop_intermediate:
         roc_items = zip(roc_columns,
@@ -36,15 +36,15 @@ def get_threshold_metrics(y_true, y_pred, drop_intermediate=False,
     roc_df = pd.DataFrame.from_items(roc_items)
 
     prec, rec, thresh = precision_recall_curve(y_true, y_pred)
-    prc_df = pd.DataFrame.from_records([prec, rec]).T
-    prc_df = pd.concat([prc_df, pd.Series(thresh)], ignore_index=True, axis=1)
-    prc_df.columns = prc_columns
+    pr_df = pd.DataFrame.from_records([prec, rec]).T
+    pr_df = pd.concat([pr_df, pd.Series(thresh)], ignore_index=True, axis=1)
+    pr_df.columns = pr_columns
 
     auroc = roc_auc_score(y_true, y_pred, average='weighted')
-    auprc = average_precision_score(y_true, y_pred, average='weighted')
+    aupr = average_precision_score(y_true, y_pred, average='weighted')
 
-    return {'auroc': auroc, 'auprc': auprc, 'roc_df': roc_df,
-            'prc_df': prc_df, 'disease': disease}
+    return {'auroc': auroc, 'aupr': aupr, 'roc_df': roc_df,
+            'pr_df': pr_df, 'disease': disease}
 
 
 def integrate_copy_number(y, cancer_genes_df, genes, loss_df, gain_df):

@@ -22,8 +22,10 @@ library(gridExtra)
 library(Hmisc)
 source(file.path("scripts", "util", "pancancer_util.R"))
 
-results_folder <- file.path("classifiers", "RAS")
+results_folder <- file.path("classifiers", "RAS_retest2")
 results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
+
+dir.create("figures")
 
 # 1) Heatmap of the distribution of aberrant events across tumors
 heatmap_plot_file <- file.path(results_folder, "figures", "ras_heatmap.pdf")
@@ -68,14 +70,14 @@ pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
          width = 8, height = 2)
 
 # Plot heatmap without collapsing Ras genes
-heat_ras_df <- heat_df %>% dplyr::select(c("NRAS_gain_y", "HRAS_gain_y",
-                                           "KRAS_gain_y", "NRAS_y", "HRAS_y",
-                                           "KRAS_y"))
+heat_ras_df <- heat_df %>% dplyr::select(NRAS_gain_y, HRAS_gain_y,
+                                         KRAS_gain_y, NRAS_y, HRAS_y,
+                                         KRAS_y)
 colnames(heat_ras_df) <- c("NRAS Gain", "HRAS Gain", "KRAS Gain",
                            "NRAS", "HRAS", "KRAS")
 heat_ras_df <- as.data.frame(heat_ras_df)
 rownames(heat_ras_df) <- heat_comb_df$DISEASE
-heat_ras_df <- heat_ras_df[order(heat_ras_df$KRAS, decreasing = TRUE), ]
+#heat_ras_df <- heat_ras_df[order(heat_ras_df$KRAS, decreasing = TRUE), ]
 
 # Plot and save heatmap
 pheatmap(t(heat_ras_df * 100), scale = "none", cluster_rows = FALSE,
@@ -361,12 +363,12 @@ perf_metric_file <- file.path(results_folder, "tables",
 metric_ranks <- readr::read_tsv(perf_metric_file,
                                 col_types = cols(.default = "c",
                                                  "AUROC" = "d",
-                                                 "AUPRC" = "d",
+                                                 "AUPR" = "d",
                                                  "AUROC Rank" = "i",
-                                                 "AUPRC Rank" = "i"))
+                                                 "AUPR Rank" = "i"))
 
-colnames(metric_ranks) <- c("Gene", "AUPR", "AUPR Rank", "ras", "AUROC",
-                            "AUROC Rank")
+# colnames(metric_ranks) <- c("Gene", "AUPR", "AUPR Rank", "ras", "AUROC",
+#                             "AUROC Rank")
 
 aupr_violin <- ggplot(metric_ranks, aes(y = AUPR, x = paste(ras),
                                         fill = paste(ras))) +
