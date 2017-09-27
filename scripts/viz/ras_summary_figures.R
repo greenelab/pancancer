@@ -22,7 +22,7 @@ library(gridExtra)
 library(Hmisc)
 source(file.path("scripts", "util", "pancancer_util.R"))
 
-results_folder <- file.path("classifiers", "RAS_retest2")
+results_folder <- file.path("classifiers", "RAS")
 results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
 
 dir.create("figures")
@@ -77,7 +77,7 @@ colnames(heat_ras_df) <- c("NRAS Gain", "HRAS Gain", "KRAS Gain",
                            "NRAS", "HRAS", "KRAS")
 heat_ras_df <- as.data.frame(heat_ras_df)
 rownames(heat_ras_df) <- heat_comb_df$DISEASE
-#heat_ras_df <- heat_ras_df[order(heat_ras_df$KRAS, decreasing = TRUE), ]
+heat_ras_df <- heat_ras_df[order(heat_ras_df$KRAS, decreasing = FALSE), ]
 
 # Plot and save heatmap
 pheatmap(t(heat_ras_df * 100), scale = "none", cluster_rows = FALSE,
@@ -307,9 +307,9 @@ ras_summary_count_df$copy_count <-
 
 # Get summary statistics for each comparison
 mut_ras_prop <- ras_summary_count_df %>% group_by(mutation_count) %>%
-  summarize(mean_ras = round(mean(as.numeric(total_status)), 2))
+  dplyr::summarize(mean_ras = round(mean(as.numeric(total_status)), 2))
 cop_ras_prop <- ras_summary_count_df %>% group_by(copy_count) %>%
-  summarize(mean_ras = round(mean(as.numeric(total_status)), 2))
+  dplyr::summarize(mean_ras = round(mean(as.numeric(total_status)), 2))
 
 mut_ras_count <- ras_summary_count_df %>% group_by(mutation_count) %>% tally()
 cop_ras_count <- ras_summary_count_df %>% group_by(copy_count) %>% tally()
@@ -321,40 +321,42 @@ cop_sum <- dplyr::inner_join(cop_ras_count, cop_ras_prop, by = "copy_count")
 med_weight <- median(ras_summary_count_df$weight)
 
 classifier_count_theme <- base_theme +
-  theme(legend.title = element_text(size = rel(1.5)),
-        legend.text = element_text(size = rel(0.8)),
+  theme(legend.title = element_text(size = rel(1.7)),
+        legend.text = element_text(size = rel(0.9)),
+        legend.key.size = unit(1, "cm"),
+        legend.position = c(1.2, 0.7),
         axis.line.x = element_line(),
         axis.line.y = element_line(),
         axis.ticks = element_line(),
         axis.title = element_text(size = rel(2)),
         axis.text = element_text(size = rel(1.5)),
-        plot.margin = unit(c(0.2, 2.5, 0.2, 0.2), "cm")) 
+        plot.margin = unit(c(0.2, 3.6, 0.2, 0.2), "cm")) 
   
 mut <- ggplot(ras_summary_count_df, aes(x = mutation_count, y = weight)) +
   geom_boxplot(aes(fill = total_status)) +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
-  scale_fill_manual(name = "RAS Status", values = c("#3B9AB2", "#F2300F"),
+  scale_fill_manual(name = "Ras Status", values = c("#3B9AB2", "#F2300F"),
                     labels = c("0" = "Wild-Type", "1" = "Activated")) +
   geom_text(data = mut_sum, aes(x = mutation_count, y = 1.06,
                                 label = paste0(n, "\n", mean_ras))) +
   classifier_count_theme +
   labs(list(x = "Number of Other Ras Pathway Mutations",
-            y = "RAS Classifier Score"))
+            y = "Ras Classifier Score"))
 
 cop <- ggplot(ras_summary_count_df, aes(x = copy_count, y = weight)) +
   geom_boxplot(aes(fill = total_status)) +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
-  scale_fill_manual(name = "RAS Status", values = c("#3B9AB2", "#F2300F"),
+  scale_fill_manual(name = "Ras Status", values = c("#3B9AB2", "#F2300F"),
                     labels = c("0" = "Wild-Type", "1" = "Activated")) +
   geom_text(data = cop_sum, aes(x = copy_count, y = 1.06,
                                 label = paste0(n, "\n", mean_ras))) +
   classifier_count_theme +
   labs(list(x = "Number of Other Ras Pathway Copy Number Events",
-            y = "RAS Classifier Score"))
+            y = "Ras Classifier Score"))
 
 ras_counts_fig <- file.path(results_folder, "figures", "ras_events_counts.svg")
-svg(ras_counts_fig, width = 6, height = 8.6)
-plot_grid(mut , cop, align = "v", nrow = 2)
+svg(ras_counts_fig, width = 6.2, height = 8.6)
+plot_grid(mut, cop, align = "v", nrow = 2)
 dev.off()
 
 # 6) Performance Metrics Distribution across pathway members
