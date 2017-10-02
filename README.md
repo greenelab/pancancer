@@ -25,7 +25,7 @@ include a pipeline to build and evaluate a machine learning _TP53_ classifier.
 
 ### Ras Signaling
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.824139.svg)](https://doi.org/10.5281/zenodo.824139)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1000876.svg)](https://doi.org/10.5281/zenodo.1000876)
 
 The Ras signaling pathway is a major player in cancer development and
 treatment resistance. We observed that nearly 60% of all tumors in TCGA
