@@ -43,6 +43,8 @@ Where GENES is a comma separated string. There are also optional arguments:
                             default: False if flag omitted
     --x_matrix          string of which feature matrix to use
                             default: raw
+    --y_matrix          string of which status matrix to use
+                            default: default
 
 Output:
 ROC curves, AUROC across diseases, and classifier coefficients
@@ -107,6 +109,8 @@ parser.add_argument('-k', '--keep_intermediate', action='store_true',
                     help='Keep intermediate ROC values for plotting')
 parser.add_argument('-x', '--x_matrix', default='raw',
                     help='Filename of features to use in model')
+parser.add_argument('-y', '--y_matrix', default='default',
+                    help='Either `default` or `xena` based on underlying data')
 args = parser.parse_args()
 
 # Load command arguments
@@ -128,6 +132,7 @@ alt_folder = args.alt_folder
 remove_hyper = args.remove_hyper
 keep_inter = args.keep_intermediate
 x_matrix = args.x_matrix
+y_matrix = args.y_matrix
 
 warnings.filterwarnings('ignore',
                         message='Changing the shape of non-C contiguous array')
@@ -177,9 +182,14 @@ if x_matrix == 'raw':
 else:
     expr_file = x_matrix
 
-mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
+if y_matrix == 'default':
+    mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
+    mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
+elif y_matrix == 'xena':
+    mut_file = os.path.join('..', 'tybalt', 'data', 'pancan_mutation.tsv')
+    mut_burden_file = os.path.join('..', 'tybalt', 'data',
+                                   'sample_mutation_burden.tsv')
 sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
-mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 
 rnaseq_full_df = pd.read_table(expr_file, index_col=0)
 mutation_df = pd.read_table(mut_file, index_col=0)
