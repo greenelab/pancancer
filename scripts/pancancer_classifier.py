@@ -186,8 +186,9 @@ if y_matrix == 'default':
     mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
     mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 elif y_matrix == 'xena':
-    mut_file = 'https://github.com/greenelab/tybalt/raw/87496e23447a06904bf9c07c389584147b87bd65/data/pancan_mutation.tsv'
+    mut_file = 'https://github.com/greenelab/tybalt/raw/928804ffd3bb3f9d5559796b2221500c303ed92c/data/pancan_mutation.tsv.gz'
     mut_burden_file = 'https://github.com/greenelab/tybalt/raw/87496e23447a06904bf9c07c389584147b87bd65/data/pancan_mutation_burden.tsv'
+
 sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
 
 rnaseq_full_df = pd.read_table(expr_file, index_col=0)
@@ -253,10 +254,8 @@ if diseases[0] == 'Auto':
 # Load mutation burden and process covariates
 y_df = y[y.DISEASE.isin(diseases)].total_status
 common_samples = list(set(y_df.index) & set(rnaseq_full_df.index))
-
 y_df = y_df.loc[common_samples]
 rnaseq_df = rnaseq_full_df.loc[y_df.index, :]
-
 if remove_hyper:
     burden_filter = mut_burden['log10_mut'] < 5 * mut_burden['log10_mut'].std()
     mut_burden = mut_burden[burden_filter]
