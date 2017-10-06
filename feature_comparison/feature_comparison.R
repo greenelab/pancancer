@@ -54,7 +54,7 @@ vae_2h300_dir <- file.path(base_file, "tybalt_twohidden300")
 
 # Process algorithm results
 raw_results <- getFeatureResults(raw_dir, "Raw", "NF1")
-shu_results <- getFeatureResults(shu_dir, "Mutation Count", "NF1")
+shu_results <- getFeatureResults(shu_dir, "Shuffled", "NF1")
 pca_results <- getFeatureResults(pca_dir, "PCA", "NF1")
 ica_results <- getFeatureResults(ica_dir, "ICA", "NF1")
 nmf_results <- getFeatureResults(nmf_dir, "NMF", "NF1")
@@ -85,7 +85,7 @@ count_df <- dplyr::bind_rows(raw_results[[2]],
                              vae_2h300_results[[2]])
 
 # Order Factors
-factor_levels <-  c("Raw", "Mutation Count", "PCA", "ICA", "NMF", "ADAGE",
+factor_levels <-  c("Raw", "Shuffled", "PCA", "ICA", "NMF", "ADAGE",
                     "Tybalt", "VAE (100)", "VAE (300)")
 
 count_df$Features <- factor(count_df$Features, levels = factor_levels)

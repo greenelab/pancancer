@@ -186,7 +186,13 @@ if y_matrix == 'default':
     mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
     mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 elif y_matrix == 'xena':
-    mut_file = 'https://github.com/greenelab/tybalt/raw/928804ffd3bb3f9d5559796b2221500c303ed92c/data/pancan_mutation.tsv.gz'
+    # Copy number data combined in the `status_matrix.tsv.gz`
+    if copy_number:
+        mut_file = 'https://github.com/greenelab/tybalt/raw/7d2854172b57efc4b92ca80d3ec86dfbbc3e4325/data/status_matrix.tsv.gz'
+        copy_number = False
+    else:
+        mut_file = 'https://github.com/greenelab/tybalt/raw/928804ffd3bb3f9d5559796b2221500c303ed92c/data/pancan_mutation.tsv.gz'
+
     mut_burden_file = 'https://github.com/greenelab/tybalt/raw/87496e23447a06904bf9c07c389584147b87bd65/data/pancan_mutation_burden.tsv'
 
 sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')

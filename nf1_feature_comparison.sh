@@ -15,7 +15,7 @@ vae_twolayer='../tybalt/data/encoded_rnaseq_twohidden_100model.tsv.gz'
 vae_twolayer300='../tybalt/data/encoded_rnaseq_twohidden_300model.tsv.gz'
 
 # Set consistent arguments for both TP53/NF1
-nf1_args='--genes NF1 --alphas 0.1,0.13,0.15,0.2,0.3 --l1_ratios 0.15,0.155,0.16,0.2,0.25 --drop --copy_number --remove_hyper --keep_inter --y_matrix xena'
+nf1_args='--genes NF1 --diseases BLCA,LGG,LUAD,PCPG,SKCM,STAD --alphas 0.1,0.13,0.15,0.2,0.3 --l1_ratios 0.15,0.155,0.16,0.2,0.25 --drop --copy_number --remove_hyper --keep_inter --y_matrix xena'
 
 # Perform the NF1 Classification Analysis
 python scripts/pancancer_classifier.py $nf1_args --x_matrix $raw --alt_folder 'feature_comparison/NF1/raw'
