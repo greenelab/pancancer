@@ -9,10 +9,11 @@
 library(dplyr)
 library(ggplot2)
 
+source(file.path("scripts", "util", "pancancer_util.R"))
 
 getFeatureResults <- function(results_directory, features, gene) {
-  # Process results - will obtain a dataframe for outputing an ROC curve
-  # and will list the number of nonzero features listed
+  # Process results - will obtain a dataframe for outputing an ROC curve,
+  # the cross validation AUROC, and will list the number of nonzero feature
   #
   # Arguments:
   # results_directory - the location of the base directory where results are
@@ -20,10 +21,12 @@ getFeatureResults <- function(results_directory, features, gene) {
   # gene - a string indicating gene name
   #
   # Output:
-  # A list with ROC results and a dataframe with nonzero count and algorithm
+  # A list with ROC results and a dataframe with nonzero count and algorithm,
+  # and cross validation AUROC
 
   roc_file <- file.path(results_directory, "pancan_roc_results.tsv")
   feature_file <- file.path(results_directory, "classifier_coefficients.tsv")
+  summary_file <- file.path(results_directory, "classifier_summary.txt")
   
   # Obtain the ROC for the given file and process dataframe
   roc_ <- readr::read_tsv(roc_file)
@@ -36,7 +39,14 @@ getFeatureResults <- function(results_directory, features, gene) {
   colnames(num_non_zero) <- "nonzero"
   num_non_zero$Features <- features
 
-  return(list(roc_, num_non_zero))
+  # Get the classifier summary
+  classifier_summary <- parse_summary(summary_file)
+  auroc <- classifier_summary$`Cross Validation AUROC`
+  auroc <- as.data.frame(round(as.numeric(auroc) * 100, 1))
+  colnames(auroc) <- "AUROC (%)"
+  auroc$Features <- features
+  
+  return(list(roc_, num_non_zero, auroc))
 }
 
 # Set file path objects
@@ -84,12 +94,26 @@ count_df <- dplyr::bind_rows(raw_results[[2]],
                              vae_2h_results[[2]],
                              vae_2h300_results[[2]])
 
+auroc_df <- dplyr::bind_rows(raw_results[[3]],
+                             shu_results[[3]],
+                             pca_results[[3]],
+                             ica_results[[3]],
+                             nmf_results[[3]],
+                             adage_results[[3]],
+                             vae_results[[3]],
+                             vae_2h_results[[3]],
+                             vae_2h300_results[[3]])
+
+# Reorder auroc_df
+auroc_df <- auroc_df %>% dplyr::select(Features, dplyr::everything())
+
 # Order Factors
 factor_levels <-  c("Raw", "Shuffled", "PCA", "ICA", "NMF", "ADAGE",
                     "Tybalt", "VAE (100)", "VAE (300)")
 
 count_df$Features <- factor(count_df$Features, levels = factor_levels)
 roc_df$Features <- factor(roc_df$Features, levels = factor_levels)
+auroc_df$Features <- factor(auroc_df$Features, levels = factor_levels)
 
 # Subset only to pancancer and also only cross validation performance
 roc_df <- roc_df %>%
@@ -101,10 +125,15 @@ manual_colors <- c("#ff7f00", "#cab2d6", "#a6cee3", "#1f78b4", "#b2df8a",
                    "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f")
 
 # Plot ROC curves and feature bar plot
+table_theme <- gridExtra::ttheme_default(base_size = 6,
+                                         padding = unit(c(2.2, 2.2), "mm"))
+table_gg <- gridExtra::tableGrob(auroc_df, rows = NULL, theme = table_theme)
 feat_gg <- ggplot(roc_df, aes(x = fpr, y = tpr, color = Features)) +
   geom_step() +
   geom_segment(aes(x = 0 , y = 0, xend = 1, yend = 1),
                linetype = "dashed", color = "black") +
+  annotation_custom(table_gg,
+                    xmin = 0.75, xmax = 0.85, ymin = 0.25, ymax = 0.35) +
   scale_color_manual(values = manual_colors) +
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(labels = scales::percent) +
@@ -115,7 +144,6 @@ feat_gg <- ggplot(roc_df, aes(x = fpr, y = tpr, color = Features)) +
   theme(axis.text = element_text(size = rel(0.8)),
         axis.title = element_text(size = rel(1.1)),
         legend.position = "none",
-        strip.text = element_text(size = rel(1.3)),
         plot.margin = unit(c(0, 0, 0.2, 0.2), "cm"))
 
 coef_gg <- ggplot(count_df, aes(y = nonzero, x = Features,
