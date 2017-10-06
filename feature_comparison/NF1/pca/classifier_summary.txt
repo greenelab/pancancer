@@ -1,0 +1,35 @@
+Parameters:
+Genes:	NF1
+Diseases:	BLCA	LGG	LUAD	PCPG	SKCM	STAD
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	134
+Drop Gene:	True
+Copy Number:	False
+Alphas:	0.1	0.13	0.15	0.2	0.3
+L1_ratios:	0.15	0.155	0.16	0.2	0.25
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.3
+Optimal L1:	0.15
+Coefficients:	feature_comparison/NF1/pca/classifier_coefficients.tsv
+Training AUROC:	0.681640441116
+Testing AUROC:	0.648018648019
+Cross Validation AUROC	0.655529961148
+Training AUPR:	0.201948333516
+Testing AUPR:	0.16807938601
+Cross Validation AUPR:	0.158193512772
+Disease specific performance:
+	LUAD	Training AUROC:	0.542396313364	Testing AUROC:	0.627450980392	Cross Validation AUROC:	0.509447004608
+	SKCM	Training AUROC:	0.566666666667	Testing AUROC:	0.888888888889	Cross Validation AUROC:	0.352525252525
+	STAD	Training AUROC:	0.60922787194	Testing AUROC:	0.1	Cross Validation AUROC:	0.572504708098
+	BLCA	Training AUROC:	0.646853146853	Testing AUROC:	0.59375	Cross Validation AUROC:	0.643006993007
+	PCPG	Training AUROC:	0.730749354005	Testing AUROC:	0.642857142857	Cross Validation AUROC:	0.670284237726
+	LGG	Training AUROC:	0.797319312796	Testing AUROC:	0.744680851064	Cross Validation AUROC:	0.757183056872
+	LUAD	Training AUPR:	0.0898416246735	Testing AUPR:	0.39766313933	Cross Validation AUPR:	0.0840217077707
+	SKCM	Training AUPR:	0.038536842285	Testing AUPR:	0.166666666667	Cross Validation AUPR:	0.0246013699433
+	STAD	Training AUPR:	0.0457196968592	Testing AUPR:	0.0263157894737	Cross Validation AUPR:	0.04690177736
+	BLCA	Training AUPR:	0.128960521768	Testing AUPR:	0.153133903134	Cross Validation AUPR:	0.181286086021
+	PCPG	Training AUPR:	0.181357762985	Testing AUPR:	0.195454545455	Cross Validation AUPR:	0.137090436254
+	LGG	Training AUPR:	0.383250999257	Testing AUPR:	0.192427656546	Cross Validation AUPR:	0.276778080399
