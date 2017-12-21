@@ -91,7 +91,7 @@ ggplot(plot_ready, aes(x = TP53, y = frac_altered)) +
   theme(legend.position = c(1.4, 0.7), axis.text.y = element_blank(),
         axis.text.x = element_text(size = rel(0.7)),
         axis.title = element_text(size = rel(0.7)),
-        legend.text = element_text(size = rel(0.35)),
+        legend.text = element_text(size = rel(0.45)),
         legend.key = element_blank(),
         legend.key.size = unit(0.8, "lines"),
         legend.background = element_rect(fill = alpha("white", 0)),
