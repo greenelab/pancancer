@@ -53,6 +53,7 @@ ROC curves, AUROC across diseases, and classifier coefficients
 import os
 import sys
 import warnings
+from random import sample
 
 import pandas as pd
 import csv
@@ -69,6 +70,7 @@ from statsmodels.robust.scale import mad
 
 sys.path.insert(0, os.path.join('scripts', 'util'))
 from tcga_util import get_threshold_metrics, integrate_copy_number
+from tcga_util import shuffle_columns
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-g', '--genes',
@@ -111,6 +113,18 @@ parser.add_argument('-x', '--x_matrix', default='raw',
                     help='Filename of features to use in model')
 parser.add_argument('-y', '--y_matrix', default='default',
                     help='Either `default` or `xena` based on underlying data')
+parser.add_argument('-e', '--shuffled', action='store_true',
+                    help='Shuffle the input gene expression matrix alongside')
+parser.add_argument('--shuffled_before_training', action='store_true',
+                    help='Shuffle the gene expression matrix before training')
+parser.add_argument('-m', '--no_mutation', action='store_false',
+                    help='Remove mutation data from y matrix')
+parser.add_argument('-z', '--drop_rasopathy', action='store_true',
+                    help='Decision to drop all rasopathy genes from X matrix')
+parser.add_argument('-q', '--drop_expression', action='store_true',
+                    help='Decision to drop all gene expression values from X')
+parser.add_argument('-j', '--drop_covariates', action='store_true',
+                    help='Decision to drop all covariate information from X')
 args = parser.parse_args()
 
 # Load command arguments
@@ -118,6 +132,7 @@ genes = args.genes.split(',')
 diseases = args.diseases.split(',')
 folds = int(args.folds)
 drop = args.drop
+drop_rasopathy = args.drop_rasopathy
 copy_number = args.copy_number
 filter_count = int(args.filter_count)
 filter_prop = float(args.filter_prop)
@@ -133,6 +148,11 @@ remove_hyper = args.remove_hyper
 keep_inter = args.keep_intermediate
 x_matrix = args.x_matrix
 y_matrix = args.y_matrix
+shuffled = args.shuffled
+shuffled_before_training = args.shuffled_before_training
+no_mutation = args.no_mutation
+drop_expression = args.drop_expression
+drop_covariates = args.drop_covariates
 
 warnings.filterwarnings('ignore',
                         message='Changing the shape of non-C contiguous array')
@@ -155,13 +175,13 @@ if not os.path.exists(disease_folder):
     os.makedirs(disease_folder)
 
 count_table_file = os.path.join(base_folder, 'summary_counts.csv')
-cv_heatmap_file = os.path.join(base_folder, 'cv_heatmap.svg')
-full_roc_file = os.path.join(base_folder, 'all_disease_roc.svg')
-full_pr_file = os.path.join(base_folder, 'all_disease_pr.svg')
+cv_heatmap_file = os.path.join(base_folder, 'cv_heatmap.pdf')
+full_roc_file = os.path.join(base_folder, 'all_disease_roc.pdf')
+full_pr_file = os.path.join(base_folder, 'all_disease_pr.pdf')
 disease_roc_file = os.path.join(base_folder, 'disease', 'classifier_roc_')
 disease_pr_file = os.path.join(base_folder, 'disease', 'classifier_pr_')
-dis_summary_auroc_file = os.path.join(base_folder, 'disease_auroc.svg')
-dis_summary_aupr_file = os.path.join(base_folder, 'disease_aupr.svg')
+dis_summary_auroc_file = os.path.join(base_folder, 'disease_auroc.pdf')
+dis_summary_aupr_file = os.path.join(base_folder, 'disease_aupr.pdf')
 classifier_file = os.path.join(base_folder, 'classifier_coefficients.tsv')
 roc_results_file = os.path.join(base_folder, 'pancan_roc_results.tsv')
 
@@ -170,9 +190,9 @@ alt_gene_base = 'alt_gene_{}_alt_disease_{}'.format(
                 args.alt_diseases.replace(',', '_'))
 alt_count_table_file = os.path.join(base_folder, 'alt_summary_counts.csv')
 alt_gene_auroc_file = os.path.join(base_folder,
-                                   '{}_auroc_bar.svg'.format(alt_gene_base))
+                                   '{}_auroc_bar.pdf'.format(alt_gene_base))
 alt_gene_aupr_file = os.path.join(base_folder,
-                                  '{}_aupr_bar.svg'.format(alt_gene_base))
+                                  '{}_aupr_bar.pdf'.format(alt_gene_base))
 alt_gene_summary_file = os.path.join(base_folder,
                                      '{}_summary.tsv'.format(alt_gene_base))
 
@@ -220,6 +240,13 @@ if drop:
     if x_matrix == 'raw':
         rnaseq_full_df.drop(common_genes, axis=1, inplace=True)
 
+if drop_rasopathy:
+    rasopathy_genes = set(['BRAF', 'CBL', 'HRAS', 'KRAS', 'MAP2K1', 'MAP2K2',
+                           'NF1', 'NRAS', 'PTPN11', 'RAF1', 'SHOC2', 'SOS1',
+                           'SPRED1', 'RIT1'])
+    rasopathy_drop = list(rasopathy_genes.intersection(rnaseq_full_df.columns))
+    rnaseq_full_df.drop(rasopathy_drop, axis=1, inplace=True)
+
 # Incorporate copy number for gene activation/inactivation
 if copy_number:
     # Load copy number matrices
@@ -236,7 +263,8 @@ if copy_number:
 
     y = integrate_copy_number(y=y, cancer_genes_df=cancer_genes,
                               genes=common_genes, loss_df=copy_loss_df,
-                              gain_df=copy_gain_df)
+                              gain_df=copy_gain_df,
+                              include_mutation=no_mutation)
 
 # Process y matrix
 y = y.assign(total_status=y.max(axis=1))
@@ -295,6 +323,21 @@ x_df_update = pd.DataFrame(fitted_scaler.transform(x_df),
 x_df_update.index = x_df.index
 x_df = x_df_update.merge(covar, left_index=True, right_index=True)
 
+# Remove information from the X matrix given input arguments
+if drop_expression:
+    x_df = x_df.iloc[:, num_features_kept:]
+elif drop_covariates:
+    x_df = x_df.iloc[:, 0:num_features_kept]
+
+# Shuffle expression matrix _before_ training - this can be used as NULL model
+if shuffled_before_training:
+    # Shuffle genes
+    x_train_genes = x_df.iloc[:, 0:num_features_kept]
+    rnaseq_shuffled_df = x_train_genes.apply(shuffle_columns, axis=1)
+
+    x_train_cov = x_df.iloc[:, num_features_kept:]
+    x_df = pd.concat([rnaseq_shuffled_df, x_train_cov], axis=1)
+
 # Build classifier pipeline
 x_train, x_test, y_train, y_test = train_test_split(x_df, y_df, test_size=0.1,
                                                     random_state=0,
@@ -326,7 +369,7 @@ ax = sns.heatmap(cv_score_mat, annot=True, fmt='.1%')
 ax.set_xlabel('Regularization strength multiplier (alpha)')
 ax.set_ylabel('Elastic net mixing parameter (l1_ratio)')
 plt.tight_layout()
-plt.savefig(cv_heatmap_file, dpi=600, format='svg', bbox_inches='tight')
+plt.savefig(cv_heatmap_file, dpi=600, bbox_inches='tight')
 plt.close()
 
 # Get predictions
@@ -345,6 +388,21 @@ y_cv = cross_val_predict(cv_pipeline.best_estimator_, X=x_train, y=y_train,
 metrics_cv = get_threshold_metrics(y_train, y_cv,
                                    drop_intermediate=keep_inter)
 
+# Determine shuffled predictive ability of shuffled gene expression matrix
+# representing a test of inflation of ROC metrics. Be sure to only shuffle
+# gene names, retain covariate information (tissue type and log10 mutations)
+if shuffled:
+    # Shuffle genes
+    x_train_genes = x_train.iloc[:, 0:num_features_kept]
+    rnaseq_shuffled_df = x_train_genes.apply(shuffle_columns, axis=1)
+
+    x_train_cov = x_train.iloc[:, num_features_kept:]
+    rnaseq_shuffled_df = pd.concat([rnaseq_shuffled_df, x_train_cov], axis=1)
+
+    y_predict_shuffled = cv_pipeline.decision_function(rnaseq_shuffled_df)
+    metrics_shuffled = get_threshold_metrics(y_train, y_predict_shuffled,
+                                             drop_intermediate=keep_inter)
+
 # Decide to save ROC results to file
 if keep_inter:
     train_roc = metrics_train['roc_df']
@@ -354,16 +412,25 @@ if keep_inter:
     cv_roc = metrics_cv['roc_df']
     cv_roc = cv_roc.assign(train_type='cv')
     full_roc_df = pd.concat([train_roc, test_roc, cv_roc])
+    if shuffled:
+        shuffled_roc = metrics_shuffled['roc_df']
+        shuffled_roc = shuffled_roc.assign(train_type='shuffled')
+        full_roc_df = pd.concat([full_roc_df, shuffled_roc])
     full_roc_df = full_roc_df.assign(disease='PanCan')
 
 # Plot ROC
 sns.set_style("whitegrid")
 plt.figure(figsize=(2.7, 2.4))
 total_auroc = {}
-colors = ['blue', 'green', 'orange']
+colors = ['blue', 'green', 'orange', 'grey']
 idx = 0
-for label, metrics in [('Training', metrics_train), ('Testing', metrics_test),
-                       ('CV', metrics_cv)]:
+
+metrics_list = [('Training', metrics_train), ('Testing', metrics_test),
+                ('CV', metrics_cv)]
+if shuffled:
+    metrics_list += [('Random', metrics_shuffled)]
+
+for label, metrics in metrics_list:
 
     roc_df = metrics['roc_df']
     plt.plot(roc_df.fpr, roc_df.tpr,
@@ -371,6 +438,8 @@ for label, metrics in [('Training', metrics_train), ('Testing', metrics_test),
              linewidth=2, c=colors[idx])
     total_auroc[label] = metrics['auroc']
     idx += 1
+
+plt.plot([0, 1], [0, 1], color='navy', linewidth=2, linestyle='--')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate', fontsize=8)
@@ -380,24 +449,29 @@ plt.tick_params(labelsize=8)
 plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
            fontsize=7.5)
 plt.tight_layout()
-plt.savefig(full_roc_file, dpi=600, format='svg', bbox_inches='tight')
+plt.savefig(full_roc_file, dpi=600, bbox_inches='tight')
 plt.close()
 
 # Plot PR
 sns.set_style("whitegrid")
 plt.figure(figsize=(2.7, 2.4))
 total_aupr = {}
-colors = ['blue', 'green', 'orange']
+colors = ['blue', 'green', 'orange', 'grey']
 idx = 0
-for label, metrics in [('Training', metrics_train), ('Testing', metrics_test),
-                       ('CV', metrics_cv)]:
 
+metrics_list = [('Training', metrics_train), ('Testing', metrics_test),
+                ('CV', metrics_cv)]
+if shuffled:
+    metrics_list += [('Random', metrics_shuffled)]
+
+for label, metrics in metrics_list:
     pr_df = metrics['pr_df']
     plt.plot(pr_df.recall, pr_df.precision,
              label='{} (AUPR = {:.1%})'.format(label, metrics['aupr']),
              linewidth=2, c=colors[idx])
     total_aupr[label] = metrics['aupr']
     idx += 1
+
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('Recall', fontsize=8)
@@ -407,7 +481,7 @@ plt.tick_params(labelsize=8)
 plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
            fontsize=7.5)
 plt.tight_layout()
-plt.savefig(full_pr_file, dpi=600, format='svg', bbox_inches='tight')
+plt.savefig(full_pr_file, dpi=600, bbox_inches='tight')
 plt.close()
 
 # disease specific performance
@@ -418,10 +492,14 @@ for disease in diseases:
 
     # Get true and predicted training labels
     y_disease_train = y_train[y_train.index.isin(sample_sub)]
+    if y_disease_train.sum() < 1:
+        continue
     y_disease_predict_train = y_predict_train[y_train.index.isin(sample_sub)]
 
     # Get true and predicted testing labels
     y_disease_test = y_test[y_test.index.isin(sample_sub)]
+    if y_disease_test.sum() < 1:
+        continue
     y_disease_predict_test = y_predict_test[y_test.index.isin(sample_sub)]
 
     # Get predicted labels for samples when they were in cross validation set
@@ -442,6 +520,14 @@ for disease in diseases:
                                        disease=disease,
                                        drop_intermediate=keep_inter)
 
+    # Get predictions and metrics with shuffled gene expression
+    if shuffled:
+        y_dis_predict_shuf = y_predict_shuffled[y_train.index.isin(sample_sub)]
+        met_shuff_dis = get_threshold_metrics(y_disease_train,
+                                              y_dis_predict_shuf,
+                                              disease=disease,
+                                              drop_intermediate=keep_inter)
+
     if keep_inter:
         train_roc = met_train_dis['roc_df']
         train_roc = train_roc.assign(train_type='train')
@@ -450,25 +536,41 @@ for disease in diseases:
         cv_roc = met_cv_dis['roc_df']
         cv_roc = cv_roc.assign(train_type='cv')
         full_dis_roc_df = train_roc.append(test_roc).append(cv_roc)
+
+        if shuffled:
+            shuffled_roc = met_shuff_dis['roc_df']
+            shuffled_roc = shuffled_roc.assign(train_type='shuffled')
+            full_dis_roc_df = full_dis_roc_df.append(shuffled_roc)
+
         full_dis_roc_df = full_dis_roc_df.assign(disease=disease)
         full_roc_df = full_roc_df.append(full_dis_roc_df)
 
     # Store results in disease indexed dictionary
     disease_metrics[disease] = [met_train_dis, met_test_dis, met_cv_dis]
 
+    if shuffled:
+        disease_metrics[disease] += [met_shuff_dis]
+
 disease_auroc = {}
 disease_aupr = {}
 for disease, metrics_val in disease_metrics.items():
-    met_train, met_test, met_cv = metrics_val
-    disease_pr_sub_file = '{}_pred_{}.svg'.format(disease_pr_file, disease)
-    disease_roc_sub_file = '{}_pred_{}.svg'.format(disease_roc_file, disease)
+
+    labels = ['Training', 'Testing', 'CV', 'Random']
+    met_list = []
+    idx = 0
+    for met in metrics_val:
+        lab = labels[idx]
+        met_list.append((lab, met))
+        idx += 1
+
+    disease_pr_sub_file = '{}_pred_{}.pdf'.format(disease_pr_file, disease)
+    disease_roc_sub_file = '{}_pred_{}.pdf'.format(disease_roc_file, disease)
 
     # Plot disease specific PR
     plt.figure(figsize=(2.7, 2.4))
     aupr = []
     idx = 0
-    for label, metrics in [('Training', met_train), ('Testing', met_test),
-                           ('CV', met_cv)]:
+    for label, metrics in met_list:
         pr_df = metrics['pr_df']
         plt.plot(pr_df.recall, pr_df.precision,
                  label='{} (AUPR = {:.1%})'.format(label, metrics['aupr']),
@@ -486,16 +588,14 @@ for disease, metrics_val in disease_metrics.items():
     plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
                fontsize=7.5)
     plt.tight_layout()
-    plt.savefig(disease_pr_sub_file, dpi=600, format='svg',
-                bbox_inches='tight')
+    plt.savefig(disease_pr_sub_file, dpi=600, bbox_inches='tight')
     plt.close()
 
     # Plot disease specific ROC
     plt.figure(figsize=(2.7, 2.4))
     auroc = []
     idx = 0
-    for label, metrics in [('Training', met_train), ('Testing', met_test),
-                           ('CV', met_cv)]:
+    for label, metrics in met_list:
         roc_df = metrics['roc_df']
         plt.plot(roc_df.fpr, roc_df.tpr,
                  label='{} (AUROC = {:.1%})'.format(label, metrics['auroc']),
@@ -504,6 +604,7 @@ for disease, metrics_val in disease_metrics.items():
         idx += 1
     disease_auroc[disease] = auroc
 
+    plt.plot([0, 1], [0, 1], color='navy', linewidth=2, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate', fontsize=8)
@@ -513,28 +614,30 @@ for disease, metrics_val in disease_metrics.items():
     plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
                fontsize=7.5)
     plt.tight_layout()
-    plt.savefig(disease_roc_sub_file, dpi=600, format='svg',
-                bbox_inches='tight')
+    plt.savefig(disease_roc_sub_file, dpi=600, bbox_inches='tight')
     plt.close()
 
-disease_auroc_df = pd.DataFrame(disease_auroc, index=['Train', 'Test',
-                                                      'Cross Validation']).T
+index_lab = ['Train', 'Test', 'Cross Validation']
+
+if shuffled:
+    index_lab += ['Random']
+
+disease_auroc_df = pd.DataFrame(disease_auroc, index=index_lab).T
 disease_auroc_df = disease_auroc_df.sort_values('Cross Validation',
                                                 ascending=False)
 ax = disease_auroc_df.plot(kind='bar', title='Disease Specific Performance')
 ax.set_ylabel('AUROC')
 plt.tight_layout()
-plt.savefig(dis_summary_auroc_file, dpi=600, format='svg', bbox_inches='tight')
+plt.savefig(dis_summary_auroc_file, dpi=600, bbox_inches='tight')
 plt.close()
 
-disease_aupr_df = pd.DataFrame(disease_aupr, index=['Train', 'Test',
-                                                    'Cross Validation']).T
+disease_aupr_df = pd.DataFrame(disease_aupr, index=index_lab).T
 disease_aupr_df = disease_aupr_df.sort_values('Cross Validation',
                                               ascending=False)
 ax = disease_aupr_df.plot(kind='bar', title='Disease Specific Performance')
 ax.set_ylabel('AUPR')
 plt.tight_layout()
-plt.savefig(dis_summary_aupr_file, dpi=600, format='svg', bbox_inches='tight')
+plt.savefig(dis_summary_aupr_file, dpi=600, bbox_inches='tight')
 plt.close()
 
 # Save classifier coefficients
@@ -636,6 +739,10 @@ if alt_genes[0] is not 'None':
             y_sub = y_test[y_test.index.isin(sample_dis)]
             category = 'Holdout'
 
+        # If there are not enough classes do not proceed to plot
+        if y_sub.sum() < 1:
+            continue
+
         neg, pos = y_sub.value_counts()
         val_x_type[disease] = [category, neg, pos]
         y_pred_alt = cv_pipeline.decision_function(x_sub)
@@ -670,8 +777,7 @@ if alt_genes[0] is not 'None':
     ax.set_ylim([0, 1])
     ax.set_ylabel('AUROC')
     plt.tight_layout()
-    plt.savefig(alt_gene_auroc_file, dpi=600, format='svg',
-                bbox_inches='tight')
+    plt.savefig(alt_gene_auroc_file, dpi=600, bbox_inches='tight')
     plt.close()
 
     # Plot alternative gene cancer-type specific AUPR plots
@@ -683,8 +789,7 @@ if alt_genes[0] is not 'None':
     ax.set_ylim([0, 1])
     ax.set_ylabel('AUPR')
     plt.tight_layout()
-    plt.savefig(alt_gene_aupr_file, dpi=600, format='svg',
-                bbox_inches='tight')
+    plt.savefig(alt_gene_aupr_file, dpi=600, bbox_inches='tight')
     plt.close()
 
 # Write a summary for the inputs and outputs of the classifier

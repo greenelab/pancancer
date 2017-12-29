@@ -47,7 +47,8 @@ def get_threshold_metrics(y_true, y_pred, drop_intermediate=False,
             'pr_df': pr_df, 'disease': disease}
 
 
-def integrate_copy_number(y, cancer_genes_df, genes, loss_df, gain_df):
+def integrate_copy_number(y, cancer_genes_df, genes, loss_df, gain_df,
+                          include_mutation=True):
     """
     Function to integrate copy number data to define gene activation or gene
     inactivation events. Copy number loss results in gene inactivation events
@@ -61,6 +62,7 @@ def integrate_copy_number(y, cancer_genes_df, genes, loss_df, gain_df):
     genes - the input list of genes to build the classifier for
     loss_df - a sample by gene dataframe listing copy number loss events
     gain_df - a sample by gene dataframe listing copy number gain events
+    include_mutation - boolean to decide to include mutation status
     """
 
     # Find if the input genes are in this master list
@@ -87,4 +89,15 @@ def integrate_copy_number(y, cancer_genes_df, genes, loss_df, gain_df):
     y = y.fillna(0)
     y = y.astype(int)
 
+    if not include_mutation:
+        y = y.drop(genes, axis=1)
     return y
+
+
+def shuffle_columns(gene):
+    """
+    To be used in an `apply` pandas func to shuffle columns around a datafame
+    Import only
+    """
+    import numpy as np
+    return np.random.permutation(gene.tolist())

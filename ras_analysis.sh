@@ -14,12 +14,16 @@ ras_diseases='BLCA,CESC,COAD,ESCA,HNSC,LUAD,LUSC,OV,PAAD,PCPG,READ,SKCM,STAD,TGC
 # 1. PanCancer NF1 Classification
 python scripts/pancancer_classifier.py --genes 'NF1' --drop --copy_number \
         --diseases $nf1_diseases --alphas $alphas --l1_ratios $l1_mixing \
-        --remove_hyper --alt_folder 'classifiers/NF1'
+        --remove_hyper --shuffled --alt_folder 'classifiers/NF1_shuffled' \
+        --keep_intermediate
 
 # 2. PanCancer RAS Classification and predict NF1 using RAS classifier
 python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
-        --remove_hyper --copy_number --alphas $alphas --l1_ratios $l1_mixing \
-        --alt_genes 'NF1' --alt_diseases $nf1_diseases --alt_folder 'classifiers/RAS'
+        --diseases $ras_diseases --copy_number --remove_hyper \
+        --alphas $alphas --l1_ratios $l1_mixing \
+        --shuffled --alt_genes 'NF1' --alt_diseases $nf1_diseases \
+        --alt_folder 'classifiers/RAS_shuffled' \
+        --keep_intermediate
 
 # 3. Within cancer-type NF1 Classification
 python scripts/within_tissue_analysis.py --genes 'NF1' \
@@ -57,7 +61,8 @@ ras_no_thca_skcm=${ras_no_thca_skcm/THCA,}
 
 python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
         --remove_hyper --copy_number --alphas $alphas --l1_ratio $l1_mixing \
-        --diseases $ras_no_thca_skcm --alt_folder 'classifiers/RAS_noTHCASKCM'
+        --diseases $ras_no_thca_skcm --shuffled --alt_folder 'classifiers/RAS_noTHCASKCM_shuffled' \
+        --keep_intermediate
 
 python scripts/apply_weights.py --classifier 'classifiers/RAS_noTHCASKCM' --copy_number
 python scripts/map_mutation_class.py --scores 'classifiers/RAS_noTHCASKCM' \
@@ -68,4 +73,52 @@ python scripts/ras_count_heatmaps.py
 Rscript --vanilla scripts/viz/ras_summary_figures.R
 Rscript --vanilla scripts/viz/nf1_summary_figures.R
 Rscript --vanilla scripts/viz/braf_summary_figures.R
+
+# 10. Additional Benchmarking Analysis
+# Randomly shuffle input RNAseq features and build a classifier
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
+        --diseases $ras_diseases --copy_number --remove_hyper \
+        --alphas $alphas --l1_ratios $l1_mixing \
+        --shuffled_before_training \
+        --keep_intermediate --alt_folder 'classifiers/RAS_shuffled_before_training'
+
+# Do not include copy number in the classifier construction
+# Note that the shuffled flag here makes classifier predictions on shuffled RNAseq data
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
+        --diseases $ras_diseases \
+        --alphas $alphas --l1_ratios $l1_mixing --remove_hyper \
+        --shuffled --alt_folder 'classifiers/RAS_nocopy' --keep_intermediate
+
+# Do not include mutation in the classifier construction
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
+        --diseases $ras_diseases --copy_number --no_mutation \
+        --alphas $alphas --l1_ratios $l1_mixing --remove_hyper \
+        --shuffled --alt_folder 'classifiers/RAS_nomutation' --keep_intermediate
+
+# Drop all Rasopathy genes
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop --drop_rasopathy \
+         --diseases $ras_diseases --copy_number --remove_hyper \
+         --alphas $alphas --l1_ratios $l1_mixing --shuffled \
+         --alt_folder 'classifiers/RAS_droprasopathy'
+
+# Use only covariate information
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
+         --diseases $ras_diseases --copy_number --remove_hyper \
+         --alphas $alphas --l1_ratios $l1_mixing \
+         --shuffled --keep_intermediate --drop_expression \
+         --alt_folder 'classifiers/RAS_onlycovariate'
+
+# Use only gene expression information
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
+         --diseases $ras_diseases --copy_number --remove_hyper \
+         --alphas $alphas --l1_ratios $l1_mixing \
+         --shuffled --keep_intermediate --drop_covariate \
+         --alt_folder 'classifiers/RAS_onlyexpression'
+
+# Drop no genes
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
+         --diseases $ras_diseases --copy_number --remove_hyper \
+         --alphas $alphas --l1_ratios $l1_mixing \
+         --shuffled --keep_intermediate \
+         --alt_folder 'classifiers/RAS_nodrop' \
 

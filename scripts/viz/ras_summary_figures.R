@@ -16,11 +16,14 @@ checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
 library(dplyr)
 library(pheatmap)
 library(ggplot2)
+library(ggrepel)
 library(readr)
 library(cowplot)
 library(gridExtra)
 library(Hmisc)
 source(file.path("scripts", "util", "pancancer_util.R"))
+
+set.seed(123)
 
 results_folder <- file.path("classifiers", "RAS")
 results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
@@ -89,69 +92,53 @@ pheatmap(t(heat_ras_df * 100), scale = "none", cluster_rows = FALSE,
          width = 8, height = 2)
 
 # 2) Coefficients contributing to the model
-coef_plot_file <- file.path(results_folder, "figures", "ras_coef_plot.svg")
+coef_plot_file <- file.path(results_folder, "figures", "ras_coef_plot.pdf")
 coef_df <- results[["Coefficients"]]
 coef_df <- coef_df[, -1]
 coef_df <- coef_df[order(coef_df$weight, decreasing = FALSE), ]
 coef_df$rank <- 1:nrow(coef_df)
 
-p <- ggplot(coef_df, aes(x = 1:nrow(coef_df), y = weight)) +
-  geom_point(fill = "black", size = 0.01) +
-  base_theme + theme(axis.line.x = element_line(),
-                     axis.line.y = element_line(),
-                     axis.ticks = element_line(),
-                     axis.title = element_text(size = rel(1.5)),
-                     plot.margin = unit(c(0.25, 0.25, 0.1, 0.1), "cm")) +
-  labs(list(x = "Rank", y = "Weight")) +
+color_logic <- (coef_df$weight > 0.09 | coef_df$weight < -0.06) |
+  (coef_df$feature == 'log10_mut')
+
+ggplot(coef_df, aes(x = 1:nrow(coef_df), y = weight)) +
+  geom_point(color = ifelse(color_logic, 'red', 'lightgrey'),
+             size = 0.01, alpha = 0.7) +
+  ylab('Ras Classifier Score') +
+  xlab('Rank') +
   scale_y_continuous(breaks = seq(-0.25, 0.25, 0.05)) +
   scale_x_continuous(breaks = seq(0, 8000, 2000)) +
   geom_segment(aes(x = 0, y = 0, yend = 0, xend = nrow(coef_df)),
-               colour = "red", linetype = "dashed", size = 0.2)
+               colour = "navy", linetype = "dashed", size = 0.2) +
+  geom_text_repel(data = subset(coef_df,
+                                (weight > 0.09 | weight < -0.06) |
+                                  coef_df$feature == 'log10_mut'),
+                  arrow = arrow(length = unit(0.01, 'npc')),
+                  segment.size = 0.3,
+                  segment.alpha = 0.3,
+                  box.padding = 0.29,
+                  point.padding = 0.3,
+                  size = 1.3,
+                  fontface = 'italic',
+                  max.iter = 3e3,
+                  force = 1,
+                  direction = 'both',
+                  xlim = c(0, 8000),
+                  aes(x = rank, y = weight, label = feature)) +
+  base_theme +
+  theme(axis.line.x = element_line(),
+        axis.line.y = element_line(),
+        axis.ticks = element_line(),
+        axis.text = element_text(size = rel(0.55)),
+        axis.title = element_text(size = rel(0.65)),
+        plot.margin = unit(c(0.25, 0.25, 0.1, 0.1), "cm"),
+        axis.title.y = element_text(margin =
+                                      margin(t = 0, r = 0, b = 0, l = 0)),
+        axis.title.x = element_text(margin =
+                                      margin(t = 3, r = 0, b = 0, l = 0)))
+ggplot2::ggsave(coef_plot_file, dpi = 600, width = 1.7, height = 1.55)
 
-p <- add_arrow_label(p = p, x = 1050, y = -0.205, label = "CDK13",
-                     offset = c(0, -0.003, -685, -.0002))
-p <- add_arrow_label(p = p, x = 1150, y = -0.190, label = "PDLIM4",
-                     offset = c(40, -0.003, -450, 0.006))
-p <- add_arrow_label(p = p, x = 1480, y = -0.172, label = "PDE5A",
-                     offset = c(80, -0.001, -690, .0003))
-p <- add_arrow_label(p = p, x = 1650, y = -0.155, label = "PURB",
-                     offset = c(80, -0.001, -680, -.00013))
-p <- add_arrow_label(p = p, x = 1700, y = -0.14, label = "FADS3",
-                     offset = c(80, -0.001, -710, .0002))
-p <- add_arrow_label(p = p, x = 2000, y = -0.12, label = "SEPP1",
-                offset = c(90, -0.0001, -700, -.00015))
-p <- add_arrow_label(p = p, x = 1800, y = -0.1, label = "ALDOC",
-                     offset = c(80, 0, -750, -.0002))
-p <- add_arrow_label(p = p, x = 2100, y = -0.085, label = "PAPLN",
-                     offset = c(80, 0, -800, -.0002))
-p <- add_arrow_label(p = p, x = 1800, y = -0.07, label = "CLU",
-                     offset = c(80, 0, -550, -.0006))
-p <- add_arrow_label(p = p, x = 1900, y = -0.055, label = "CUL1",
-                     offset = c(80, 0, -690, -.0002))
-
-p <- add_arrow_label(p = p, x = 6800, y = 0.15, label = "PBX3",
-                     offset = c(-80, .0004, 600, -.004))
-p <- add_arrow_label(p = p, x = 6500, y = 0.12, label = "SPRY2",
-                     offset = c(-80, 0, 760, -.0006))
-p <- add_arrow_label(p = p, x = 6200, y = 0.1, label = "PPP1R3B",
-                     offset = c(-80, .0004, 1000, -.001))
-p <- add_arrow_label(p = p, x = 6050, y = 0.084, label = "C15orf52",
-                     offset = c(-80, .0004, 950, -.0015))
-p <- add_arrow_label(p = p, x = 5850, y = 0.062, label = "MLPH",
-                     offset = c(-80, .0004, 700, -.0015))
-p <- add_arrow_label(p = p, x = 5350, y = 0.041, label = "ERRFI1",
-                     offset = c(-80, .0004, 790, -.0015))
-p <- add_arrow_label(p = p, x = 6750, y = 0.032, label = "CMAS",
-                     offset = c(-80, -.001, 270, .01))
-
-p <- add_arrow_label(p = p, x = 6500, y = 0.016, label = "log10_mut",
-                     offset = c(-80, -0.0142, 900, 0.005))
-
-svg(coef_plot_file, width = 2.5, height = 2.25)
-p
-dev.off()
-
-# 3) Plot distributions of predictions according to variant classification
+ # 3) Plot distributions of predictions according to variant classification
 var_plot_file <- file.path(results_folder, "figures", "variant_fill_map.svg")
 mut_df <- readr::read_tsv(file.path(results_folder, "tables",
                                     "mutation_classification_scores.tsv"))
