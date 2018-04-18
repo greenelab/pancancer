@@ -14,8 +14,8 @@ import os
 import pandas as pd
 
 copy_input_file = os.path.join('data', 'raw', 'pancan_GISTIC_threshold.tsv')
-copy_loss_file = os.path.join('data', 'copy_number_loss_status.tsv')
-copy_gain_file = os.path.join('data', 'copy_number_gain_status.tsv')
+copy_loss_file = os.path.join('data', 'copy_number_loss_status.tsv.gz')
+copy_gain_file = os.path.join('data', 'copy_number_gain_status.tsv.gz')
 sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
 
 # Load data
@@ -36,8 +36,8 @@ copy_thresh_df = copy_thresh_df.astype(int)
 # and "deep losses" to define impactful copy number events.
 copy_loss_df = copy_thresh_df.replace(to_replace=[1, 2, -1], value=0)
 copy_loss_df.replace(to_replace=-2, value=1, inplace=True)
-copy_loss_df.to_csv(copy_loss_file, sep='\t')
+copy_loss_df.to_csv(copy_loss_file, sep='\t', compression='gzip')
 
 copy_gain_df = copy_thresh_df.replace(to_replace=[-1, -2, 1], value=0)
 copy_gain_df.replace(to_replace=2, value=1, inplace=True)
-copy_gain_df.to_csv(copy_gain_file, sep='\t')
+copy_gain_df.to_csv(copy_gain_file, sep='\t', compression='gzip')

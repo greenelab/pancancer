@@ -198,12 +198,12 @@ alt_gene_summary_file = os.path.join(base_folder,
 
 # Load Datasets
 if x_matrix == 'raw':
-    expr_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
+    expr_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv.gz')
 else:
     expr_file = x_matrix
 
 if y_matrix == 'default':
-    mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
+    mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv.gz')
     mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 elif y_matrix == 'xena':
     # Copy number data combined in the `status_matrix.tsv.gz`
@@ -250,16 +250,15 @@ if drop_rasopathy:
 # Incorporate copy number for gene activation/inactivation
 if copy_number:
     # Load copy number matrices
-    copy_loss_df = pd.read_table(os.path.join('data',
-                                              'copy_number_loss_status.tsv'),
-                                 index_col=0)
-    copy_gain_df = pd.read_table(os.path.join('data',
-                                              'copy_number_gain_status.tsv'),
-                                 index_col=0)
+    copy_loss_file = os.path.join('data', 'copy_number_loss_status.tsv.gz')
+    copy_loss_df = pd.read_table(copy_loss_file, index_col=0)
+
+    copy_gain_file = os.path.join('data', 'copy_number_gain_status.tsv.gz')
+    copy_gain_df = pd.read_table(copy_gain_file, index_col=0)
 
     # Load cancer gene classification table
-    cancer_genes = pd.read_table(os.path.join('data',
-                                              'vogelstein_cancergenes.tsv'))
+    vogel_file = os.path.join('data', 'vogelstein_cancergenes.tsv')
+    cancer_genes = pd.read_table(vogel_file)
 
     y = integrate_copy_number(y=y, cancer_genes_df=cancer_genes,
                               genes=common_genes, loss_df=copy_loss_df,

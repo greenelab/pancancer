@@ -64,21 +64,14 @@ released.**
 
 ### Initialization
 
-The pipeline must be initialized before use. Initialization will download and
-process data and setup computational environment for R and python.
-
-To initialize, enter the following in the command line:
+The repository must be cloned onto local machine before analyses can proceed.
 
 ```sh
-# Login to synapse to download controlled-access data
-synapse login
+# Make sure git-lfs (https://git-lfs.github.com/) is installed before cloning
+# If not, run `git lfs install`
+git clone git@github.com:greenelab/pancancer.git
 
-# Create and activate conda environment
-conda env create --quiet --force --file environment.yml
-source activate pancancer-classifier
-
-# Initialize script
-./initialize.sh
+cd pancancer
 ```
 
 ### Example Scripts

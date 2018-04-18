@@ -5,7 +5,9 @@ scripts/initialize/process_sample_freeze.py
 
 Takes in sample freeze data that was determined by TCGA PanCancer Atlas
 consortium along with raw RNAseq and mutation data. The script will process
-the datasets and subset each according to the frozen samples.
+the datasets and subset each according to the frozen samples. The frozen
+samples were previously determined and include all samples to consider in
+downstream analyses.
 
 Usage: Run once in command line
 
@@ -21,13 +23,13 @@ import pandas as pd
 
 # Input Files
 rna_file = os.path.join('data', 'raw', 'pancan_normalized_rnaseq.tsv')
-mut_file = os.path.join('data', 'raw', 'mc3.v0.2.8.PUBLIC.maf')
+mut_file = os.path.join('data', 'raw', 'mc3.v0.2.8.PUBLIC.maf.gz')
 sample_freeze_file = os.path.join('data', 'raw',
                                   'sampleset_freeze_version4_modify.csv')
 
 # Output Files
-rna_out_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv')
-mut_out_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
+rna_out_file = os.path.join('data', 'pancan_rnaseq_freeze.tsv.gz')
+mut_out_file = os.path.join('data', 'pancan_mutation_freeze.tsv.gz')
 freeze_out_file = os.path.join('data', 'sample_freeze.tsv')
 burden_out_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 
@@ -65,7 +67,7 @@ freeze_barcodes = sorted(freeze_barcodes)
 # Subset rnaseq data to only barcodes and remove duplicate rows
 rnaseq_df = rnaseq_df.loc[freeze_barcodes, :]
 rnaseq_df = rnaseq_df[~rnaseq_df.index.duplicated()]
-rnaseq_df.to_csv(rna_out_file, sep='\t', index_col=0)
+rnaseq_df.to_csv(rna_out_file, sep='\t', compression='gzip')
 
 # Filter mutation types and generate binary matrix
 mutations = {
@@ -98,7 +100,7 @@ mut_pivot = (mut_pivot.pivot_table(index='SAMPLE_BARCODE',
 mut_pivot = mut_pivot.loc[freeze_barcodes, :]
 mut_pivot = mut_pivot.fillna(0)
 mut_pivot = mut_pivot.astype(int)
-mut_pivot.to_csv(mut_out_file, sep='\t', index_col=0)
+mut_pivot.to_csv(mut_out_file, sep='\t', compression='gzip')
 
 # Generate a mutation burden variable (log10 total deleterious mutations)
 burden_df = mutation_df[mutation_df['Variant_Classification'].isin(mutations)]

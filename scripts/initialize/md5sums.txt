@@ -1,5 +1,4 @@
 02e72c33071307ff6570621480d3c90b  data/raw/pancan_normalized_rnaseq.tsv
+639ad8f8386e98dacc22e439188aa8fa  data/raw/mc3.v0.2.8.PUBLIC.maf.gz
 6d983890c5693a556621142eead3d3bb  data/raw/pancan_GISTIC_threshold.tsv
-91f16c866b069a0b607638fdb0f111de  data/raw/mc3.v0.2.8.PUBLIC.maf
-9d3b6f3e369944043d7855c013554e18  data/mutation-load.txt
 24ad6e2c29beb206ca068828ec99da74  data/seg_based_scores.tsv
