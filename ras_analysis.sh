@@ -11,114 +11,181 @@ l1_mixing='0.15,0.155,0.16,0.2,0.25,0.3,0.4'
 nf1_diseases='BLCA,COAD,GBM,LGG,LUAD,LUSC,OV,PCPG,SARC,SKCM,STAD,UCEC'
 ras_diseases='BLCA,CESC,COAD,ESCA,HNSC,LUAD,LUSC,OV,PAAD,PCPG,READ,SKCM,STAD,TGCT,THCA,UCEC'
 
-# 1. PanCancer NF1 Classification
+################
+# Step 1. PanCancer NF1 Classification
+################
+# Train using RNAseq matrix
 python scripts/pancancer_classifier.py --genes 'NF1' --drop --copy_number \
         --diseases $nf1_diseases --alphas $alphas --l1_ratios $l1_mixing \
-        --remove_hyper --shuffled --alt_folder 'classifiers/NF1_shuffled' \
-        --keep_intermediate
+        --remove_hyper --alt_folder 'classifiers/NF1' --keep_intermediate \
+        --shuffled
 
-# 2. PanCancer RAS Classification and predict NF1 using RAS classifier
+################
+# Step 2. PanCancer RAS Classification
+################
+# Train using RNAseq matrix and predict NF1 using Ras classifier
 python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
-        --diseases $ras_diseases --copy_number --remove_hyper \
-        --alphas $alphas --l1_ratios $l1_mixing \
-        --shuffled --alt_genes 'NF1' --alt_diseases $nf1_diseases \
-        --alt_folder 'classifiers/RAS_shuffled' \
-        --keep_intermediate
+        --copy_number --diseases $ras_diseases --alphas $alphas \
+        --l1_ratios $l1_mixing --remove_hyper --alt_folder 'classifiers/RAS' \
+        --keep_intermediate --shuffled \
+        --alt_genes 'NF1' --alt_diseases $nf1_diseases
 
-# 3. Within cancer-type NF1 Classification
+# Train using shuffled RNAseq matrix
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
+        --copy_number --diseases $ras_diseases --alphas $alphas \
+        --l1_ratios $l1_mixing --remove_hyper --shuffled_before_training \
+        --keep_intermediate --alt_folder 'classifiers/RAS_shuffled'
+
+################
+# Step 3. Within Cancer-Type Classification Comparison
+################
+# NF1
 python scripts/within_tissue_analysis.py --genes 'NF1' \
         --diseases $nf1_diseases --remove_hyper \
         --alphas $alphas --l1_ratios $l1_mixing \
         --alt_folder 'classifiers/NF1/within_disease'
 
-# 4. Within cancer-type RAS Classification
+# Summarize NF1 within cancer-type performance
+Rscript scripts/compare_within_models.R --pancan_summary 'classifiers/NF1' \
+        --within_dir 'classifiers/NF1/within_disease'
+
+# Ras
 python scripts/within_tissue_analysis.py --genes 'KRAS,HRAS,NRAS' \
         --diseases $ras_diseases --remove_hyper \
         --alphas $alphas --l1_ratios $l1_mixing \
         --alt_folder 'classifiers/RAS/within_disease'
 
-# 5. Compare within disease type classification
-Rscript scripts/compare_within_models.R --pancan_summary 'classifiers/NF1/' \
-        --within_dir 'classifiers/NF1/within_disease/'
-Rscript scripts/compare_within_models.R --pancan_summary 'classifiers/RAS/' \
-        --within_dir 'classifiers/RAS/within_disease/' --alt_gene 'classifiers/NF1'
+# Summarize Ras within cancer-type performance
+Rscript scripts/compare_within_models.R --pancan_summary 'classifiers/RAS' \
+        --within_dir 'classifiers/RAS/within_disease/' \
+        --alt_gene 'classifiers/NF1'
 
-# 6. Visualize scores
+###############
+# Step 4. Get scores for all samples and visualize distribution of scores
+###############
+# NF1
 python scripts/apply_weights.py --classifier 'classifiers/NF1' --copy_number
 python scripts/visualize_decisions.py --scores 'classifiers/NF1'
 
+# Ras
 python scripts/apply_weights.py --classifier 'classifiers/RAS' --copy_number
 python scripts/visualize_decisions.py --scores 'classifiers/RAS'
 
-# 7. Map Mutations to RAS pathway scores
+###############
+# Step 5. Map mutations to Ras pathway scores
+###############
 python scripts/map_mutation_class.py --scores 'classifiers/RAS' \
-        --genes 'classifiers/RAS/ras_genes.csv'
+        --genes 'data/ras_genes.csv'
 python scripts/alternative_genes_pathwaymapper.py
 
-# 8. Rerun Ras classifier without THCA and SKCM (BRAFV600E in THCA was not predicted)
+###############
+# Step 6. Rerun Ras classifier without THCA and SKCM and perform analysis
+#         (BRAFV600E in THCA was not predicted)
+###############
 ras_no_thca_skcm=${ras_diseases/SKCM,}
 ras_no_thca_skcm=${ras_no_thca_skcm/THCA,}
 
 python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
         --remove_hyper --copy_number --alphas $alphas --l1_ratio $l1_mixing \
-        --diseases $ras_no_thca_skcm --shuffled --alt_folder 'classifiers/RAS_noTHCASKCM_shuffled' \
+        --diseases $ras_no_thca_skcm --shuffled \
+        --alt_folder 'classifiers/RAS_noTHCASKCM' \
         --keep_intermediate
 
-python scripts/apply_weights.py --classifier 'classifiers/RAS_noTHCASKCM' --copy_number
+python scripts/apply_weights.py --classifier 'classifiers/RAS_noTHCASKCM' \
+       --copy_number
 python scripts/map_mutation_class.py --scores 'classifiers/RAS_noTHCASKCM' \
-        --genes 'classifiers/RAS/ras_genes.csv'
+        --genes 'data/ras_genes.csv'
 
-# 9. Plot Ras, NF1, and BRAF results
-python scripts/ras_count_heatmaps.py
-Rscript --vanilla scripts/viz/ras_summary_figures.R
-Rscript --vanilla scripts/viz/nf1_summary_figures.R
-Rscript --vanilla scripts/viz/braf_summary_figures.R
-
-# 10. Additional Benchmarking Analysis
+###############
+# Step 7. Perform Some Additional Benchmarking Analysis
+###############
 # Randomly shuffle input RNAseq features and build a classifier
 python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
         --diseases $ras_diseases --copy_number --remove_hyper \
         --alphas $alphas --l1_ratios $l1_mixing \
-        --shuffled_before_training \
-        --keep_intermediate --alt_folder 'classifiers/RAS_shuffled_before_training'
+        --shuffled_before_training --keep_intermediate \
+        --alt_folder 'classifiers/RAS_shuffled_before_training'
 
 # Do not include copy number in the classifier construction
-# Note that the shuffled flag here makes classifier predictions on shuffled RNAseq data
-python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
+# The shuffled flag here makes classifier predictions on shuffled RNAseq data
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS'\
+        --drop \
         --diseases $ras_diseases \
-        --alphas $alphas --l1_ratios $l1_mixing --remove_hyper \
-        --shuffled --alt_folder 'classifiers/RAS_nocopy' --keep_intermediate
+        --alphas $alphas \
+        --l1_ratios $l1_mixing \
+        --remove_hyper \
+        --shuffled \
+        --alt_folder 'classifiers/RAS_nocopy' \
+        --keep_intermediate
 
 # Do not include mutation in the classifier construction
-python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
-        --diseases $ras_diseases --copy_number --no_mutation \
-        --alphas $alphas --l1_ratios $l1_mixing --remove_hyper \
-        --shuffled --alt_folder 'classifiers/RAS_nomutation' --keep_intermediate
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
+        --drop \
+        --diseases $ras_diseases \
+        --copy_number \
+        --no_mutation \
+        --alphas $alphas \
+        --l1_ratios $l1_mixing \
+        --remove_hyper \
+        --shuffled \
+        --alt_folder 'classifiers/RAS_nomutation' \
+        --keep_intermediate
 
 # Drop all Rasopathy genes
-python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop --drop_rasopathy \
-         --diseases $ras_diseases --copy_number --remove_hyper \
-         --alphas $alphas --l1_ratios $l1_mixing --shuffled \
-         --alt_folder 'classifiers/RAS_droprasopathy'
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
+         --drop \
+         --drop_rasopathy \
+         --diseases $ras_diseases \
+         --copy_number \
+         --remove_hyper \
+         --alphas $alphas \
+         --l1_ratios $l1_mixing \
+         --shuffled \
+         --alt_folder 'classifiers/RAS_droprasopathy' \
+         --keep_intermediate
 
 # Use only covariate information
-python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
-         --diseases $ras_diseases --copy_number --remove_hyper \
-         --alphas $alphas --l1_ratios $l1_mixing \
-         --shuffled --keep_intermediate --drop_expression \
-         --alt_folder 'classifiers/RAS_onlycovariate'
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
+         --drop \
+         --diseases $ras_diseases \
+         --copy_number \
+         --remove_hyper \
+         --alphas $alphas \
+         --l1_ratios $l1_mixing \
+         --drop_expression \
+         --alt_folder 'classifiers/RAS_onlycovariate' \
+         --keep_intermediate
 
 # Use only gene expression information
-python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' --drop \
-         --diseases $ras_diseases --copy_number --remove_hyper \
-         --alphas $alphas --l1_ratios $l1_mixing \
-         --shuffled --keep_intermediate --drop_covariate \
-         --alt_folder 'classifiers/RAS_onlyexpression'
+python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
+         --drop \
+         --diseases $ras_diseases \
+         --copy_number --remove_hyper \
+         --alphas $alphas \
+         --l1_ratios $l1_mixing \
+         --shuffled \
+         --drop_covariate \
+         --alt_folder 'classifiers/RAS_onlyexpression' \
+         --keep_intermediate
 
 # Drop no genes
 python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
-         --diseases $ras_diseases --copy_number --remove_hyper \
-         --alphas $alphas --l1_ratios $l1_mixing \
-         --shuffled --keep_intermediate \
+         --diseases $ras_diseases \
+         --copy_number \
+         --remove_hyper \
+         --alphas $alphas \
+         --l1_ratios $l1_mixing \
+         --shuffled \
          --alt_folder 'classifiers/RAS_nodrop' \
+         --keep_intermediate
 
+###############
+# Step 8. Plot additional Ras, NF1, and BRAF results
+###############
+python scripts/ras_count_heatmaps.py
+Rscript --vanilla scripts/viz/ras_summary_figures.R
+Rscript --vanilla scripts/viz/ras_ccle_pharmacology.R
+Rscript --vanilla scripts/viz/ras_benchmarking_figures.R
+
+Rscript --vanilla scripts/viz/nf1_summary_figures.R
+Rscript --vanilla scripts/viz/braf_summary_figures.R

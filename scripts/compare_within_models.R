@@ -19,8 +19,6 @@
 # Output:
 # Bar Plots for each comparison
 
-checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
-
 library(ggplot2)
 library(dplyr)
 source(file.path("scripts", "util", "pancancer_util.R"))
@@ -86,6 +84,9 @@ base_comparison_theme <- theme_bw() + within_theme +
         legend.background = element_rect(fill = alpha("white", 0)),
         plot.margin = unit(c(0.2, 1.5, 0, 0.1), "cm"))
 
+# Create directory structure for figures
+dir.create(file.path(pan_summary_dir, "figures"))
+
 # AUROC comparison figure
 auroc_comparison_plot <- ggplot(auroc_plot, aes(x = Disease, y = AUROC,
                                                 fill = Model)) +
@@ -98,8 +99,8 @@ auroc_comparison_plot <- ggplot(auroc_plot, aes(x = Disease, y = AUROC,
   coord_cartesian(ylim = c(0.4, 1)) +
   scale_y_continuous(breaks = seq(0.4, 1, 0.1))
 
-auroc_comp_fig <- file.path(pan_summary_dir, "figures", "auroc_comparison.svg")
-svg(auroc_comp_fig, width = 4.2, height = 1.4)
+auroc_comp_fig <- file.path(pan_summary_dir, "figures", "auroc_comparison.pdf")
+pdf(auroc_comp_fig, width = 4.2, height = 1.4)
 auroc_comparison_plot
 dev.off()
 
@@ -113,8 +114,8 @@ aupr_comparison_plot <- ggplot(aupr_plot, aes(x = Disease, y = AUPR,
   coord_cartesian(ylim = c(0, 1)) +
   scale_y_continuous(breaks = seq(0, 1, 0.1))
 
-aupr_comp_fig <- file.path(pan_summary_dir, "figures", "aupr_comparison.svg")
-svg(aupr_comp_fig, width = 4.2, height = 1.4)
+aupr_comp_fig <- file.path(pan_summary_dir, "figures", "aupr_comparison.pdf")
+pdf(aupr_comp_fig, width = 4.2, height = 1.4)
 aupr_comparison_plot
 dev.off()
 
@@ -205,8 +206,8 @@ if (!is.null(alt_gene_dir)) {
     scale_y_continuous(breaks = seq(0.4, 1, 0.1))
   
   alt_auroc_figure <- file.path(pan_summary_dir, "figures",
-                               "alt_gene_auroc_comparison.svg")
-  svg(alt_auroc_figure, width = 2.5, height = 1.4)
+                               "alt_gene_auroc_comparison.pdf")
+  pdf(alt_auroc_figure, width = 2.5, height = 1.4)
   print(alt_auroc_plot)
   dev.off()
   
@@ -223,8 +224,8 @@ if (!is.null(alt_gene_dir)) {
     scale_y_continuous(breaks = seq(0, 1, 0.1))
   
   alt_aupr_figure <- file.path(pan_summary_dir, "figures",
-                               "alt_gene_aupr_comparison.svg")
-  svg(alt_aupr_figure, width = 2.5, height = 1.4)
+                               "alt_gene_aupr_comparison.pdf")
+  pdf(alt_aupr_figure, width = 2.5, height = 1.4)
   print(alt_aupr_plot)
   dev.off()
 }

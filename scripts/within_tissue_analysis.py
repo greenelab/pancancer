@@ -71,7 +71,7 @@ for acronym in disease_types:
     command = ['python', os.path.join('scripts', 'pancancer_classifier.py'),
                '--genes', genes, '--diseases', acronym, '--drop',
                '--copy_number', '--alphas', alphas, '--l1_ratios', l1_ratios,
-               '--alt_folder', alt_folder]
+               '--alt_folder', alt_folder, '--shuffled', '--keep_intermediate']
     if remove_hyper:
         command += ['--remove_hyper']
     subprocess.call(command)

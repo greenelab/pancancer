@@ -17,6 +17,17 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 # In[2]:
 
 
+# Get the current working directory
+cwd = os.getcwd()
+
+# Ensure that the path is starting in the scripts directory
+if not cwd.split('/')[-1] == 'scripts':
+    os.chdir(os.path.join(cwd, 'scripts'))
+
+
+# In[3]:
+
+
 def get_gene_auroc(x, w):
     score = roc_auc_score(x, w, average='weighted')
     return(score)
@@ -26,20 +37,20 @@ def get_gene_auprc(x, w):
     return(score)
 
 
-# In[3]:
-
-
-ras_folder = os.path.join('classifiers', 'RAS')
-
-
 # In[4]:
 
 
+ras_folder = os.path.join('..', 'classifiers', 'RAS')
+
+
+# In[5]:
+
+
 # Load Datasets
-mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv')
-sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
-copy_loss_file = os.path.join('data', 'copy_number_loss_status.tsv')
-copy_gain_file = os.path.join('data', 'copy_number_gain_status.tsv')
+mut_file = os.path.join('..', 'data', 'pancan_mutation_freeze.tsv.gz')
+sample_freeze_file = os.path.join('..', 'data', 'sampleset_freeze.csv')
+copy_loss_file = os.path.join('..', 'data', 'copy_number_loss_status.tsv.gz')
+copy_gain_file = os.path.join('..', 'data', 'copy_number_gain_status.tsv.gz')
 
 mutation_df = pd.read_table(mut_file, index_col=0)
 sample_freeze = pd.read_table(sample_freeze_file, index_col=0)
@@ -47,15 +58,15 @@ copy_loss_df = pd.read_table(copy_loss_file, index_col=0)
 copy_gain_df = pd.read_table(copy_gain_file, index_col=0)
 
 
-# In[5]:
+# In[6]:
 
 
 # Load Ras Pathway Genes
-ras_genes_file = os.path.join(ras_folder, 'ras_genes.csv')
+ras_genes_file = os.path.join('..', 'data', 'ras_genes.csv')
 ras_genes_df = pd.read_table(ras_genes_file)
 
 
-# In[6]:
+# In[7]:
 
 
 # Load classifier weights
@@ -64,7 +75,7 @@ ras_decisions_df = pd.read_table(ras_decision_file)
 ras_decisions_df.head()
 
 
-# In[7]:
+# In[8]:
 
 
 ras_mutations_df = mutation_df[ras_genes_df['genes']]
@@ -83,14 +94,14 @@ ras_copy_loss_sub_df = copy_loss_df[tumor_suppressor['genes']]
 ras_copy_df = pd.concat([ras_copy_gain_sub_df, ras_copy_loss_sub_df], axis=1)
 
 
-# In[8]:
+# In[9]:
 
 
 ras_status_df = ras_mutations_df + ras_copy_df
 ras_status_df[ras_status_df == 2] = 1
 
 
-# In[9]:
+# In[10]:
 
 
 subset_columns = ['SAMPLE_BARCODE', 'DISEASE', 'weight', 'total_status', 'log10_mut',
@@ -101,7 +112,7 @@ ras_full_status_df = ras_status_df.merge(ras_decisions_subset_df, left_index=Tru
 ras_full_status_df.index = ras_full_status_df['SAMPLE_BARCODE']
 
 
-# In[10]:
+# In[11]:
 
 
 # Remove hyper mutated samples
@@ -111,7 +122,7 @@ ras_full_status_df = ras_full_status_df[burden_filter]
 ras_full_status_df.head(3)
 
 
-# In[11]:
+# In[12]:
 
 
 full_auroc = (
@@ -125,7 +136,7 @@ full_auprc = (
     )
 
 
-# In[12]:
+# In[13]:
 
 
 # Remove Ras positive samples, and recalculate metrics
@@ -136,7 +147,7 @@ full_auroc_remove = remove_ras_status_df.apply(lambda x: get_gene_auroc(x, w=rem
 full_auprc_remove = remove_ras_status_df.apply(lambda x: get_gene_auprc(x, w=remove_ras_status['weight']))
 
 
-# In[13]:
+# In[14]:
 
 
 # Get output metrics for Ras classification
@@ -158,11 +169,17 @@ output_ras_metrics['no_ras_auprc'] = (
     )
 
 # Write results to file
+tables_folder = os.path.join(ras_folder, 'tables')
+if not os.path.exists(tables_folder):
+    os.makedirs(tables_folder)
+
 ras_metric_file = os.path.join(ras_folder, 'tables', 'ras_metrics_pathwaymapper.txt')
 output_ras_metrics.to_csv(ras_metric_file, sep='\t')
 
+output_ras_metrics.head()
 
-# In[14]:
+
+# In[15]:
 
 
 # Display Ras pathway metrics
@@ -176,7 +193,7 @@ print(average_precision_score(all_samples_ras_pathway_status,
                               ras_full_status_df['weight'], average='weighted'))
 
 
-# In[15]:
+# In[16]:
 
 
 print('Ras Pathway Performance Summary: KRAS, NRAS, HRAS')
@@ -188,7 +205,7 @@ print(average_precision_score(ras_full_status_df['total_status'],
                               ras_full_status_df['weight'], average='weighted'))
 
 
-# In[16]:
+# In[17]:
 
 
 print('Ras Pathway Performance Summary: Held Out Samples')
@@ -201,64 +218,9 @@ print(average_precision_score(held_out_ras_df['total_status'],
                               held_out_ras_df['weight'], average='weighted'))
 
 
-# In[17]:
-
-
-# Load Hippo Pathway Genes
-hippo_genes_file = os.path.join(ras_folder, 'hippo_genes.csv')
-hippo_genes_df = pd.read_table(hippo_genes_file)
-hippo_genes_df.head()
-
-
-# In[18]:
-
-
-# Subset mutation dataframe to hippo pathway genes
-hippo_status_df = mutation_df[hippo_genes_df['genes']]
-hippo_full_status_df = hippo_status_df.merge(ras_decisions_subset_df, left_index=True,
-                                             right_on='SAMPLE_BARCODE')
-hippo_full_status_df.index = hippo_full_status_df['SAMPLE_BARCODE']
-hippo_full_status_df = hippo_full_status_df[burden_filter]
-
-
-# In[19]:
-
-
-# Compile prediction metrics for Hippo pathway and save to file
-full_hippo_auroc = (
-    hippo_full_status_df[hippo_genes_df['genes']]
-    .apply(lambda x: get_gene_auroc(x, hippo_full_status_df['weight']))
-    )
-full_hippo_auprc = (
-    hippo_full_status_df[hippo_genes_df['genes']]
-    .apply(lambda x: get_gene_auprc(x, hippo_full_status_df['weight']))
-    )
-
-full_hippo_auroc = full_hippo_auroc * 100
-full_hippo_auroc = full_hippo_auroc - 50
-full_hippo_auprc = full_hippo_auprc * 100
-
-output_hippo_metrics = pd.DataFrame([full_hippo_auroc, full_hippo_auprc]).T
-output_hippo_metrics.columns = ['hippo_auroc', 'hippo_auprc']
-
-hippo_metric_file = os.path.join(ras_folder, 'tables', 'hippo_metrics_pathwaymapper.txt')
-output_hippo_metrics.to_csv(hippo_metric_file, sep='\t')
-
-
-# In[20]:
-
-
-all_hippo_sample_status = hippo_full_status_df[hippo_genes_df['genes']].max(axis=1)
-print('Hippo Pathway Performance Summary: All Hippo Genes')
-print('AUROC:')
-print(roc_auc_score(all_hippo_sample_status, hippo_full_status_df['weight'], average='weighted'))
-print('AUPRC:')
-print(average_precision_score(all_hippo_sample_status, hippo_full_status_df['weight'], average='weighted'))
-
-
 # # Visualize Distribution of AUROC and AUPRC for all genes
 
-# In[21]:
+# In[18]:
 
 
 # Subset mutation file by samples
@@ -271,7 +233,7 @@ sub_full_mutation_df = sub_full_mutation_df[low_mutation_count_filter]
 sub_full_mutation_df.head()
 
 
-# In[22]:
+# In[19]:
 
 
 # Get Metrics for All Genes
@@ -279,7 +241,7 @@ all_auprc = sub_full_mutation_df.apply(lambda x: get_gene_auprc(x, w = ras_full_
 all_auroc = sub_full_mutation_df.apply(lambda x: get_gene_auroc(x, w = ras_full_status_df['weight']))
 
 
-# In[23]:
+# In[20]:
 
 
 # Process file and save results
@@ -300,4 +262,3 @@ all_genes_metrics_df = all_genes_auprc_df.reset_index().merge(all_genes_auroc_df
 all_genes_metrics_df.columns = ['Gene', 'AUPRC', 'AUPRC Rank', 'ras', 'AUROC', 'AUROC Rank']
 all_genes_metrics_df.to_csv(all_gene_metrics_file, sep='\t', index=False)
 all_genes_metrics_df.head(10)
-

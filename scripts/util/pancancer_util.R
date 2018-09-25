@@ -7,8 +7,6 @@
 #
 # Usage: sourced by scripts using function
 
-checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
-
 library(ggplot2)
 
 # ggplot2 themes to be used in various contexts

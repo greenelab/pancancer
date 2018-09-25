@@ -11,8 +11,6 @@
 # Output:
 # Several figures to summarize Ras findings
 
-checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
-
 library(dplyr)
 library(pheatmap)
 library(ggplot2)
@@ -25,7 +23,7 @@ source(file.path("scripts", "util", "pancancer_util.R"))
 
 set.seed(123)
 
-results_folder <- file.path("classifiers", "RAS")
+results_folder <- file.path("classifiers_archive", "RAS")
 results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
 
 dir.create("figures")
@@ -139,7 +137,7 @@ ggplot(coef_df, aes(x = 1:nrow(coef_df), y = weight)) +
 ggplot2::ggsave(coef_plot_file, dpi = 600, width = 1.7, height = 1.55)
 
  # 3) Plot distributions of predictions according to variant classification
-var_plot_file <- file.path(results_folder, "figures", "variant_fill_map.svg")
+var_plot_file <- file.path(results_folder, "figures", "variant_fill_map.pdf")
 mut_df <- readr::read_tsv(file.path(results_folder, "tables",
                                     "mutation_classification_scores.tsv"))
 
@@ -268,12 +266,12 @@ braf_df$Disease <- dplyr::recode(braf_df$Disease,
                                  "READ" = "Other")
 
 braf_plot_file <- file.path(results_folder, "figures",
-                            "brafv600e_distribution.svg")
+                            "brafv600e_distribution.pdf")
 braf_plot <- ggplot(braf_df, aes(Weight, fill = Disease)) +
   geom_density(alpha = 0.4) + theme_bw() +
   ylab("Density") + xlab("BRAFV600E Classifier Score")
 
-svg(braf_plot_file, width = 4, height = 3)
+pdf(braf_plot_file, width = 4, height = 3)
 braf_plot
 dev.off()
 
@@ -341,8 +339,8 @@ cop <- ggplot(ras_summary_count_df, aes(x = copy_count, y = weight)) +
   labs(list(x = "Number of Other Ras Pathway Copy Number Events",
             y = "Ras Classifier Score"))
 
-ras_counts_fig <- file.path(results_folder, "figures", "ras_events_counts.svg")
-svg(ras_counts_fig, width = 6.2, height = 8.6)
+ras_counts_fig <- file.path(results_folder, "figures", "ras_events_counts.pdf")
+pdf(ras_counts_fig, width = 6.2, height = 8.6)
 plot_grid(mut, cop, align = "v", nrow = 2)
 dev.off()
 
@@ -352,14 +350,14 @@ perf_metric_file <- file.path(results_folder, "tables",
 metric_ranks <- readr::read_tsv(perf_metric_file,
                                 col_types = cols(.default = "c",
                                                  "AUROC" = "d",
-                                                 "AUPR" = "d",
+                                                 "AUPRC" = "d",
                                                  "AUROC Rank" = "i",
-                                                 "AUPR Rank" = "i"))
+                                                 "AUPRC Rank" = "i"))
 
 # colnames(metric_ranks) <- c("Gene", "AUPR", "AUPR Rank", "ras", "AUROC",
 #                             "AUROC Rank")
 
-aupr_violin <- ggplot(metric_ranks, aes(y = AUPR, x = paste(ras),
+aupr_violin <- ggplot(metric_ranks, aes(y = AUPRC, x = paste(ras),
                                         fill = paste(ras))) +
   geom_violin() +
   theme(legend.position = "none") +
@@ -381,11 +379,11 @@ auroc_violin <- ggplot(metric_ranks, aes(y = AUROC, x = paste(ras),
   xlab("") +
   scale_x_discrete(labels = c("0" = "Other", "1" = "Ras Pathway Genes"))
 
-aupr_plot <- ggplot(metric_ranks, aes(x = `AUPR Rank`, y = AUPR)) +
+aupr_plot <- ggplot(metric_ranks, aes(x = `AUPRC Rank`, y = AUPRC)) +
   geom_point(color = "darkgrey") +
   geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = "red") +
-  xlab("AUPR Rank") +
-  ylab("AUPR") +
+  xlab("AUPRC Rank") +
+  ylab("AUPRC") +
   theme(axis.line.x = element_line(),
         axis.line.y = element_line(),
         axis.ticks = element_line(),
@@ -398,8 +396,8 @@ auroc_plot <- ggplot(metric_ranks, aes(x = `AUROC Rank`, y = AUROC)) +
   geom_point(data = metric_ranks[metric_ranks$ras == 1, ], color = "red")
 
 # Get the top genes by both metrics
-top_aupr_genes <- metric_ranks[order(metric_ranks$`AUPR Rank`), 1:2]
-top_aupr_genes <- top_aupr_genes %>% mutate(AUPR = round(AUPR, 2))
+top_aupr_genes <- metric_ranks[order(metric_ranks$`AUPRC Rank`), 1:2]
+top_aupr_genes <- top_aupr_genes %>% mutate(AUPRC = round(AUPRC, 2))
 
 top_aupr_table_grob <- tableGrob(top_aupr_genes[1:15, ])
 aupr_plot <- aupr_plot +
@@ -420,23 +418,23 @@ plot_grid(aupr_plot, aupr_violin, align = "h", ncol = 2)
 dev.off()
 
 auroc_distribution_fig <- file.path(results_folder, "figures", 
-                                    "auroc_distribution.svg")
+                                    "auroc_distribution.pdf")
 
-svg(auroc_distribution_fig, width = 11, height = 7.5)
+pdf(auroc_distribution_fig, width = 11, height = 7.5)
 plot_grid(auroc_plot, auroc_violin, align = "h", ncol = 2)
 dev.off()
 
 # T-Test for AUPR between Ras pathway genes and Other genes
 ras_genes_aupr <- metric_ranks %>%
   dplyr::filter(ras == 1) %>%
-  dplyr::select(AUPR)
+  dplyr::select(AUPRC)
 
 other_genes_aupr <- metric_ranks %>%
   dplyr::filter(ras == 0) %>%
-  dplyr::select(AUPR)
+  dplyr::select(AUPRC)
 
 t_test_file <- file.path("classifiers", "RAS", "tables",
                          "ras_variant_AUPR_ttest.txt")
 sink(t_test_file)
-t.test(ras_genes_aupr$AUPR, other_genes_aupr$AUPR, alternative = "greater")
+t.test(ras_genes_aupr$AUPRC, other_genes_aupr$AUPRC, alternative = "greater")
 sink()

@@ -44,7 +44,7 @@ def plot_decision_function(subset_df, filename, title):
     sns.despine()
     plt.axvline(x=0.5, color='k', ls='dashed', linewidth=0.7)
     plt.tight_layout()
-    plt.savefig(filename, format='svg', bbox_inches='tight')
+    plt.savefig(filename, format='pdf', bbox_inches='tight')
     plt.close()
 
 parser = argparse.ArgumentParser()
@@ -69,25 +69,25 @@ diseases = pred_df['DISEASE'].unique()
 
 # Visualize decision function
 plot_decision_function(subset_df=pred_df[pred_df.include == 1],
-                       filename=os.path.join(out_dir, 'total_decisions.svg'),
+                       filename=os.path.join(out_dir, 'total_decisions.pdf'),
                        title='Classifier Decision Function')
 
 # Plot disease type specific decision functions
 for disease_type in diseases:
     sub_df = pred_df.ix[pred_df.DISEASE == disease_type]
-    d_file = os.path.join(out_dir, 'decision_plot_{}.svg'.format(disease_type))
+    d_file = os.path.join(out_dir, 'decision_plot_{}.pdf'.format(disease_type))
     d_title = 'Classifier Decision Function\n{}'.format(disease_type)
     plot_decision_function(subset_df=sub_df, filename=d_file, title=d_title)
 
 # Visualize decision function for hyper mutated tumors
 plot_decision_function(subset_df=pred_df[pred_df.hypermutated == 1],
-                       filename=os.path.join(out_dir, 'hyper_mutated.svg'),
+                       filename=os.path.join(out_dir, 'hyper_mutated.pdf'),
                        title='Hypermutated Tumors')
 
 # Visualize decision function for copy number loss tumors
 if args.custom:
     for col in custom_columns:
-        plot_file = os.path.join(out_dir, '{}_decision_plot.svg'.format(col))
+        plot_file = os.path.join(out_dir, '{}_decision_plot.pdf'.format(col))
         plot_decision_function(subset_df=pred_df[pred_df[col] == 1],
                                filename=plot_file,
                                title=col)

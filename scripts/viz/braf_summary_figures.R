@@ -12,8 +12,6 @@
 # Output:
 # Several figures to summarize BRAF findings
 
-checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
-
 library(dplyr)
 library(pheatmap)
 library(ggplot2)
@@ -23,6 +21,9 @@ library(gridExtra)
 source(file.path("scripts", "util", "pancancer_util.R"))
 
 results_folder <- file.path("classifiers", "RAS_noTHCASKCM")
+figures_folder <- file.path(results_folder, "figures")
+dir.create(figures_folder)
+
 results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
 
 # 1) Plot distributions of predictions according to variant classification
@@ -101,7 +102,7 @@ colnames(final_df) <- c("ID", "Gene", "Disease", "Weight", "HGVSc", "HGVSp",
                         "Class")
 
 # Plot summary distribution of variant classes prediction scores
-var_plot_file <- file.path(results_folder, "figures", "variant_distrib.svg")
+var_plot_file <- file.path(results_folder, "figures", "variant_distrib.pdf")
 ggplot(final_df, aes(Weight, ..count.., fill = Class)) +
   geom_density(position = "fill", size = 0.1) +
   geom_segment(aes(x = 0.5, y = 0, yend = 1, xend = 0.5), colour = "black",
@@ -155,11 +156,11 @@ braf_df$Disease <- dplyr::recode(braf_df$Disease,
                                  "READ" = "Other")
 
 braf_plot_file <- file.path(results_folder, 'figures',
-                            'brafv600e_distribution.svg')
+                            'brafv600e_distribution.pdf')
 braf_plot <- ggplot(braf_df, aes(Weight, fill = Disease)) +
   geom_density(alpha = 0.4) + theme_bw() +
   ylab("Density") + xlab("BRAFV600E Classifier Score")
 
-svg(braf_plot_file, width = 4, height = 3)
+pdf(braf_plot_file, width = 4, height = 3)
 braf_plot
 dev.off()

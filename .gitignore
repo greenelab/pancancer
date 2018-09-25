@@ -1,5 +1,5 @@
-classifiers/
 .Rhistory
+.Rplots.pdf
 .ipynb_checkpoints/
 __pycache__/
 .checkpoint/

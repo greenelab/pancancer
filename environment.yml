@@ -1,17 +1,27 @@
 name: pancancer-classifier
 channels:
-- r
 - bioconda
 dependencies:
-- bioconda::r-checkpoint=0.4.0
-- anaconda::jupyter=1.0.0
-- anaconda::numpy=1.11.2
-- anaconda::pandas=0.20.3
-- anaconda::scikit-learn=0.18.1
-- anaconda::seaborn=0.8.1
-- anaconda::python=3.5.2
-- anaconda::statsmodels=0.8.0
-- anaconda::numexpr=2.6.2
-- conda-forge::plotnine=0.2.1
-- conda-forge::dask-searchcv=0.0.2
-
+- conda-forge::python=3.6.5
+- conda-forge::jupyter=1.0.0
+- conda-forge::ipykernel=4.8.1
+- conda-forge::r-irkernel=0.8.11
+- conda-forge::nb_conda_kernels=2.1.0
+- conda-forge::widgetsnbextension=2.0.0
+- conda-forge::numpy=1.14.3
+- conda-forge::pandas=0.23.0
+- conda-forge::scikit-learn=0.19.1
+- conda-forge::seaborn=0.8.1
+- conda-forge::statsmodels=0.9.0
+- conda-forge::numexpr=2.6.5
+- conda-forge::plotnine=0.3.0
+- conda-forge::dask-searchcv=0.2.0
+- conda-forge::r-ggplot2=3.0.0
+- conda-forge::r-dplyr=0.7.6
+- conda-forge::r-readr=1.1.1
+- conda-forge::r-optparse=1.4.4
+- conda-forge::r-pheatmap=1.0.10
+- conda-forge::r-ggpmisc=0.3.0
+- conda-forge::r-ggrepel 0.8.0
+- conda-forge::r-cowplot=0.9.3
+- conda-forge::r-hmisc=4.0_3

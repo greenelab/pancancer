@@ -43,8 +43,6 @@ Where GENES is a comma separated string. There are also optional arguments:
                             default: False if flag omitted
     --x_matrix          string of which feature matrix to use
                             default: raw
-    --y_matrix          string of which status matrix to use
-                            default: default
 
 Output:
 ROC curves, AUROC across diseases, and classifier coefficients
@@ -53,7 +51,6 @@ ROC curves, AUROC across diseases, and classifier coefficients
 import os
 import sys
 import warnings
-from random import sample
 
 import pandas as pd
 import csv
@@ -111,8 +108,6 @@ parser.add_argument('-k', '--keep_intermediate', action='store_true',
                     help='Keep intermediate ROC values for plotting')
 parser.add_argument('-x', '--x_matrix', default='raw',
                     help='Filename of features to use in model')
-parser.add_argument('-y', '--y_matrix', default='default',
-                    help='Either `default` or `xena` based on underlying data')
 parser.add_argument('-e', '--shuffled', action='store_true',
                     help='Shuffle the input gene expression matrix alongside')
 parser.add_argument('--shuffled_before_training', action='store_true',
@@ -147,7 +142,6 @@ alt_folder = args.alt_folder
 remove_hyper = args.remove_hyper
 keep_inter = args.keep_intermediate
 x_matrix = args.x_matrix
-y_matrix = args.y_matrix
 shuffled = args.shuffled
 shuffled_before_training = args.shuffled_before_training
 no_mutation = args.no_mutation
@@ -202,19 +196,8 @@ if x_matrix == 'raw':
 else:
     expr_file = x_matrix
 
-if y_matrix == 'default':
-    mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv.gz')
-    mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
-elif y_matrix == 'xena':
-    # Copy number data combined in the `status_matrix.tsv.gz`
-    if copy_number:
-        mut_file = 'https://github.com/greenelab/tybalt/raw/7d2854172b57efc4b92ca80d3ec86dfbbc3e4325/data/status_matrix.tsv.gz'
-        copy_number = False
-    else:
-        mut_file = 'https://github.com/greenelab/tybalt/raw/928804ffd3bb3f9d5559796b2221500c303ed92c/data/pancan_mutation.tsv.gz'
-
-    mut_burden_file = 'https://github.com/greenelab/tybalt/raw/87496e23447a06904bf9c07c389584147b87bd65/data/pancan_mutation_burden.tsv'
-
+mut_file = os.path.join('data', 'pancan_mutation_freeze.tsv.gz')
+mut_burden_file = os.path.join('data', 'mutation_burden_freeze.tsv')
 sample_freeze_file = os.path.join('data', 'sample_freeze.tsv')
 
 rnaseq_full_df = pd.read_table(expr_file, index_col=0)
@@ -331,14 +314,16 @@ elif drop_covariates:
 # Shuffle expression matrix _before_ training - this can be used as NULL model
 if shuffled_before_training:
     # Shuffle genes
-    x_train_genes = x_df.iloc[:, 0:num_features_kept]
-    rnaseq_shuffled_df = x_train_genes.apply(shuffle_columns, axis=1)
+    x_train_genes = x_df.iloc[:, range(num_features_kept)]
+    rnaseq_shuffled_df = x_train_genes.apply(shuffle_columns, axis=1,
+                                             result_type='broadcast')
 
     x_train_cov = x_df.iloc[:, num_features_kept:]
     x_df = pd.concat([rnaseq_shuffled_df, x_train_cov], axis=1)
 
 # Build classifier pipeline
-x_train, x_test, y_train, y_test = train_test_split(x_df, y_df, test_size=0.1,
+x_train, x_test, y_train, y_test = train_test_split(x_df, y_df,
+                                                    test_size=0.1,
                                                     random_state=0,
                                                     stratify=strat)
 
@@ -348,10 +333,13 @@ clf_parameters = {'classify__loss': ['log'],
 
 estimator = Pipeline(steps=[('classify', SGDClassifier(random_state=0,
                                                        class_weight='balanced',
-                                                       loss='log'))])
+                                                       loss='log',
+                                                       max_iter=5,
+                                                       tol=None))])
 
 cv_pipeline = GridSearchCV(estimator=estimator, param_grid=clf_parameters,
-                           n_jobs=-1, cv=folds, scoring='roc_auc')
+                           n_jobs=-1, cv=folds, scoring='roc_auc',
+                           return_train_score=True)
 cv_pipeline.fit(X=x_train, y=y_train)
 
 cv_results = pd.concat([pd.DataFrame(cv_pipeline.cv_results_)
@@ -392,8 +380,9 @@ metrics_cv = get_threshold_metrics(y_train, y_cv,
 # gene names, retain covariate information (tissue type and log10 mutations)
 if shuffled:
     # Shuffle genes
-    x_train_genes = x_train.iloc[:, 0:num_features_kept]
-    rnaseq_shuffled_df = x_train_genes.apply(shuffle_columns, axis=1)
+    x_train_genes = x_train.iloc[:, range(num_features_kept)]
+    rnaseq_shuffled_df = x_train_genes.apply(shuffle_columns, axis=1,
+                                             result_type='broadcast')
 
     x_train_cov = x_train.iloc[:, num_features_kept:]
     rnaseq_shuffled_df = pd.concat([rnaseq_shuffled_df, x_train_cov], axis=1)
@@ -419,7 +408,7 @@ if keep_inter:
 
 # Plot ROC
 sns.set_style("whitegrid")
-plt.figure(figsize=(2.7, 2.4))
+plt.figure(figsize=(3, 3))
 total_auroc = {}
 colors = ['blue', 'green', 'orange', 'grey']
 idx = 0
@@ -434,26 +423,30 @@ for label, metrics in metrics_list:
     roc_df = metrics['roc_df']
     plt.plot(roc_df.fpr, roc_df.tpr,
              label='{} (AUROC = {:.1%})'.format(label, metrics['auroc']),
-             linewidth=2, c=colors[idx])
+             linewidth=1, c=colors[idx])
     total_auroc[label] = metrics['auroc']
     idx += 1
 
-plt.plot([0, 1], [0, 1], color='navy', linewidth=2, linestyle='--')
+plt.axis('equal')
+plt.plot([0, 1], [0, 1], color='navy', linewidth=1, linestyle='--')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate', fontsize=8)
 plt.ylabel('True Positive Rate', fontsize=8)
 plt.title('')
 plt.tick_params(labelsize=8)
-plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
-           fontsize=7.5)
-plt.tight_layout()
-plt.savefig(full_roc_file, dpi=600, bbox_inches='tight')
+lgd = plt.legend(bbox_to_anchor=(1.03, 0.85),
+                 loc=2,
+                 borderaxespad=0.,
+                 fontsize=7.5)
+
+plt.savefig(full_roc_file, dpi=600, bbox_extra_artists=(lgd,),
+            bbox_inches='tight')
 plt.close()
 
 # Plot PR
 sns.set_style("whitegrid")
-plt.figure(figsize=(2.7, 2.4))
+plt.figure(figsize=(3, 3))
 total_aupr = {}
 colors = ['blue', 'green', 'orange', 'grey']
 idx = 0
@@ -467,20 +460,24 @@ for label, metrics in metrics_list:
     pr_df = metrics['pr_df']
     plt.plot(pr_df.recall, pr_df.precision,
              label='{} (AUPR = {:.1%})'.format(label, metrics['aupr']),
-             linewidth=2, c=colors[idx])
+             linewidth=1, c=colors[idx])
     total_aupr[label] = metrics['aupr']
     idx += 1
 
+plt.axis('equal')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('Recall', fontsize=8)
 plt.ylabel('Precision', fontsize=8)
 plt.title('')
 plt.tick_params(labelsize=8)
-plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
-           fontsize=7.5)
-plt.tight_layout()
-plt.savefig(full_pr_file, dpi=600, bbox_inches='tight')
+lgd = plt.legend(bbox_to_anchor=(1.03, 0.85),
+                 loc=2,
+                 borderaxespad=0.,
+                 fontsize=7.5)
+
+plt.savefig(full_pr_file, dpi=600, bbox_extra_artists=(lgd,),
+            bbox_inches='tight')
 plt.close()
 
 # disease specific performance
@@ -566,54 +563,62 @@ for disease, metrics_val in disease_metrics.items():
     disease_roc_sub_file = '{}_pred_{}.pdf'.format(disease_roc_file, disease)
 
     # Plot disease specific PR
-    plt.figure(figsize=(2.7, 2.4))
+    plt.figure(figsize=(3, 3))
     aupr = []
     idx = 0
     for label, metrics in met_list:
         pr_df = metrics['pr_df']
         plt.plot(pr_df.recall, pr_df.precision,
                  label='{} (AUPR = {:.1%})'.format(label, metrics['aupr']),
-                 linewidth=2, c=colors[idx])
+                 linewidth=1, c=colors[idx])
         aupr.append(metrics['aupr'])
         idx += 1
     disease_aupr[disease] = aupr
 
+    plt.axis('equal')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('Recall', fontsize=8)
     plt.ylabel('Precision', fontsize=8)
     plt.title('')
     plt.tick_params(labelsize=8)
-    plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
-               fontsize=7.5)
-    plt.tight_layout()
-    plt.savefig(disease_pr_sub_file, dpi=600, bbox_inches='tight')
+    lgd = plt.legend(bbox_to_anchor=(1.03, 0.85),
+                     loc=2,
+                     borderaxespad=0.,
+                     fontsize=7.5)
+
+    plt.savefig(disease_pr_sub_file, dpi=600, bbox_extra_artists=(lgd,),
+                bbox_inches='tight')
     plt.close()
 
     # Plot disease specific ROC
-    plt.figure(figsize=(2.7, 2.4))
+    plt.figure(figsize=(3, 3))
     auroc = []
     idx = 0
     for label, metrics in met_list:
         roc_df = metrics['roc_df']
         plt.plot(roc_df.fpr, roc_df.tpr,
                  label='{} (AUROC = {:.1%})'.format(label, metrics['auroc']),
-                 linewidth=2, c=colors[idx])
+                 linewidth=1, c=colors[idx])
         auroc.append(metrics['auroc'])
         idx += 1
     disease_auroc[disease] = auroc
 
-    plt.plot([0, 1], [0, 1], color='navy', linewidth=2, linestyle='--')
+    plt.axis('equal')
+    plt.plot([0, 1], [0, 1], color='navy', linewidth=1, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate', fontsize=8)
     plt.ylabel('True Positive Rate', fontsize=8)
     plt.title('')
     plt.tick_params(labelsize=8)
-    plt.legend(bbox_to_anchor=(0.2, -0.45, 0.7, .202), loc=0, borderaxespad=0.,
-               fontsize=7.5)
-    plt.tight_layout()
-    plt.savefig(disease_roc_sub_file, dpi=600, bbox_inches='tight')
+    lgd = plt.legend(bbox_to_anchor=(1.03, 0.85),
+                     loc=2,
+                     borderaxespad=0.,
+                     fontsize=7.5)
+
+    plt.savefig(disease_roc_sub_file, dpi=600, bbox_extra_artists=(lgd,),
+                bbox_inches='tight')
     plt.close()
 
 index_lab = ['Train', 'Test', 'Cross Validation']
@@ -643,9 +648,9 @@ plt.close()
 final_pipeline = cv_pipeline.best_estimator_
 final_classifier = final_pipeline.named_steps['classify']
 
-coef_df = pd.DataFrame.from_items([
-    ('feature', x_df.columns),
-    ('weight', final_classifier.coef_[0])])
+coef_df = pd.DataFrame.from_dict(
+    {'feature': x_df.columns,
+     'weight': final_classifier.coef_[0]})
 
 coef_df['abs'] = coef_df['weight'].abs()
 coef_df = coef_df.sort_values('abs', ascending=False)

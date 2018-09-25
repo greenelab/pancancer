@@ -11,8 +11,6 @@
 # Output:
 # Heatmap for included cancer-types in NF1 classifier
 
-checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
-
 library(dplyr)
 library(pheatmap)
 library(ggplot2)

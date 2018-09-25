@@ -33,7 +33,7 @@ def get_threshold_metrics(y_true, y_pred, drop_intermediate=False,
     else:
         roc_items = zip(roc_columns, roc_curve(y_true, y_pred))
 
-    roc_df = pd.DataFrame.from_items(roc_items)
+    roc_df = pd.DataFrame.from_dict(dict(roc_items))
 
     prec, rec, thresh = precision_recall_curve(y_true, y_pred)
     pr_df = pd.DataFrame.from_records([prec, rec]).T
