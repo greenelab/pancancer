@@ -182,7 +182,17 @@ python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
 ###############
 # Step 8. Plot additional Ras, NF1, and BRAF results
 ###############
+# Plot Ras pathway heatmaps
 python scripts/ras_count_heatmaps.py
+
+# Visualize CCLE predictions
+jupyter nbconvert --to=script \
+        --FilesWriter.build_directory=scripts \
+        --ExecutePreprocessor.kernel_name=python3 \
+        --ExecutePreprocessor.timeout=100000 \
+        --execute scripts/ras_cell_line_predictions.ipynb
+
+# Plot summary figures
 Rscript --vanilla scripts/viz/ras_summary_figures.R
 Rscript --vanilla scripts/viz/ras_ccle_pharmacology.R
 Rscript --vanilla scripts/viz/ras_benchmarking_figures.R

@@ -23,7 +23,7 @@ source(file.path("scripts", "util", "pancancer_util.R"))
 
 set.seed(123)
 
-results_folder <- file.path("classifiers_archive", "RAS")
+results_folder <- file.path("classifiers", "RAS")
 results <- parse_summary(file.path(results_folder, "classifier_summary.txt"))
 
 dir.create("figures")
