@@ -256,7 +256,8 @@ count_df = y.groupby('DISEASE').sum()
 prop_df = count_df.divide(y['DISEASE'].value_counts(sort=False).sort_index(),
                           axis=0)
 
-count_table = count_df.merge(prop_df, left_index=True, right_index=True)
+count_table = count_df.merge(prop_df, left_index=True, right_index=True,
+                             suffixes=('_count', '_proportion'))
 count_table.to_csv(count_table_file)
 
 # Filter diseases
@@ -679,8 +680,10 @@ if alt_genes[0] is not 'None':
     alt_prop_df = alt_count_df.divide(y_alt['DISEASE'].value_counts(sort=False)
                                                       .sort_index(), axis=0)
 
-    alt_count_table = alt_count_df.merge(alt_prop_df, left_index=True,
-                                         right_index=True)
+    alt_count_table = alt_count_df.merge(alt_prop_df,
+                                         left_index=True,
+                                         right_index=True,
+                                         suffixes=('_count', '_proportion'))
     alt_count_table.to_csv(alt_count_table_file)
 
     mut_co = alt_count_df['total_status']

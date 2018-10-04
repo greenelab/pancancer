@@ -27,7 +27,7 @@ heatmap_plot_file <- file.path(results_folder, "figures", "nf1_heatmap.pdf")
 heat_file <- file.path(results_folder, "summary_counts.csv")
 heat_df <- readr::read_csv(heat_file)
 
-prop_matrix <- as.matrix(heat_df[, c('NF1_loss_y', 'NF1_y')])
+prop_matrix <- as.matrix(heat_df[, c('NF1_loss_proportion', 'NF1_proportion')])
 rownames(prop_matrix) <- heat_df$DISEASE
 colnames(prop_matrix) <- c("Loss", "Mutation")
 

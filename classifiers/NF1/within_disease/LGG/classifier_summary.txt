@@ -1,0 +1,25 @@
+Parameters:
+Genes:	NF1
+Diseases:	LGG
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.25	0.3
+L1_ratios:	0.15	0.155	0.16	0.2	0.25	0.3	0.4
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.13
+Optimal L1:	0.16
+Coefficients:	classifiers/NF1/within_disease/LGG/classifier_coefficients.tsv
+Training AUROC:	0.9906666666666667
+Testing AUROC:	0.875
+Cross Validation AUROC	0.8712156862745097
+Training AUPR:	0.838159403127829
+Testing AUPR:	0.4769230769230769
+Cross Validation AUPR:	0.5307454967023553
+Disease specific performance:
+	LGG	Training AUROC:	0.9906666666666667	Testing AUROC:	0.875	Cross Validation AUROC:	0.8712156862745097
+	LGG	Training AUPR:	0.838159403127829	Testing AUPR:	0.4769230769230769	Cross Validation AUPR:	0.5307454967023553

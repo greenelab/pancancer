@@ -34,8 +34,9 @@ ras_heatmap_file <- file.path(results_folder, "figures", "all_ras_heatmap.pdf")
 heat_file <- file.path(results_folder, "summary_counts.csv")
 heat_df <- readr::read_csv(heat_file)
 
-heat_comb_df <- heat_df %>% dplyr::mutate(RAS = HRAS_y + NRAS_y + KRAS_y) %>%
-  dplyr::mutate(RAS_gain = HRAS_gain_y + NRAS_gain_y + KRAS_gain_y)
+heat_comb_df <- heat_df %>%
+  dplyr::mutate(RAS = HRAS_proportion + NRAS_proportion + KRAS_proportion) %>%
+  dplyr::mutate(RAS_gain = HRAS_gain_proportion + NRAS_gain_proportion + KRAS_gain_proportion)
 
 prop_matrix <- as.matrix(heat_comb_df[, c("RAS_gain", "RAS")])
 rownames(prop_matrix) <- heat_comb_df$DISEASE
@@ -71,9 +72,12 @@ pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
          width = 8, height = 2)
 
 # Plot heatmap without collapsing Ras genes
-heat_ras_df <- heat_df %>% dplyr::select(NRAS_gain_y, HRAS_gain_y,
-                                         KRAS_gain_y, NRAS_y, HRAS_y,
-                                         KRAS_y)
+heat_ras_df <- heat_df %>% dplyr::select(NRAS_gain_proportion,
+                                         HRAS_gain_proportion,
+                                         KRAS_gain_proportion,
+                                         NRAS_proportion,
+                                         HRAS_proportion,
+                                         KRAS_proportion)
 colnames(heat_ras_df) <- c("NRAS Gain", "HRAS Gain", "KRAS Gain",
                            "NRAS", "HRAS", "KRAS")
 heat_ras_df <- as.data.frame(heat_ras_df)
@@ -283,7 +287,7 @@ ras_summary_count_df <- readr::read_tsv(ras_count_file,
                                                          "weight" = "d",
                                                          "total_status" = "c"))
 ras_summary_count_df$copy_count <- factor(ras_summary_count_df$copy_count,
-                                          levels = c("0", "1", "2", "3","4", 
+                                          levels = c("0", "1", "2", "3","4",
                                                      "5", "6", "7", "8", "9",
                                                      "10"))
 ras_summary_count_df$copy_count <-
@@ -315,8 +319,8 @@ classifier_count_theme <- base_theme +
         axis.ticks = element_line(),
         axis.title = element_text(size = rel(2)),
         axis.text = element_text(size = rel(1.5)),
-        plot.margin = unit(c(0.2, 3.6, 0.2, 0.2), "cm")) 
-  
+        plot.margin = unit(c(0.2, 3.6, 0.2, 0.2), "cm"))
+
 mut <- ggplot(ras_summary_count_df, aes(x = mutation_count, y = weight)) +
   geom_boxplot(aes(fill = total_status)) +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
@@ -374,7 +378,7 @@ aupr_violin <- ggplot(metric_ranks, aes(y = AUPRC, x = paste(ras),
 auroc_violin <- ggplot(metric_ranks, aes(y = AUROC, x = paste(ras),
                                          fill = paste(ras))) +
   geom_violin() +
-  theme(legend.position = "none") + 
+  theme(legend.position = "none") +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
   xlab("") +
   scale_x_discrete(labels = c("0" = "Other", "1" = "Ras Pathway Genes"))
@@ -410,14 +414,14 @@ auroc_plot <- auroc_plot +
   annotation_custom(top_auroc_table_grob, xmin = 10000,
                     xmax = 15000, ymin = 0.6, ymax = 0.95)
 
-aupr_distribution_fig <- file.path(results_folder, "figures", 
+aupr_distribution_fig <- file.path(results_folder, "figures",
                                    "aupr_distribution.pdf")
 
 pdf(aupr_distribution_fig, width = 11.5, height = 7.5)
 plot_grid(aupr_plot, aupr_violin, align = "h", ncol = 2)
 dev.off()
 
-auroc_distribution_fig <- file.path(results_folder, "figures", 
+auroc_distribution_fig <- file.path(results_folder, "figures",
                                     "auroc_distribution.pdf")
 
 pdf(auroc_distribution_fig, width = 11, height = 7.5)

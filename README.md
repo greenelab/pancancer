@@ -11,15 +11,6 @@ The code in this repository is flexible and can build a Pan-Cancer classifier fo
 and copy number data.
 In this repository, we provide examples for building classifiers to detect aberration in _TP53_ and Ras signalling.
 
-### TP53
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.400250.svg)](https://doi.org/10.5281/zenodo.400250)
-
-We are interested in building a classifier to detect _TP53_ inactivation.
-_TP53_ is the most highly mutated gene in cancer and regulates several important oncogenic processes such as apoptosis and DNA damage response (DDR).
-We include a pipeline to build and evaluate a machine learning _TP53_ classifier.
-See [`tp53_analysis.sh`](tp53_analysis.sh) for more details.
-
 ### Ras Signalling
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1000876.svg)](https://doi.org/10.5281/zenodo.1000876)
@@ -30,12 +21,37 @@ We observed that nearly 60% of all tumors in TCGA have mutations or copy number 
 We applied our approach to detect Ras pathway activation using _KRAS_, _HRAS_, and _NRAS_ gain of function mutations and copy number gains to define our gold standard Ras hyperactivation events.
 We train a supervised classifier to detect when a tumor has activated Ras.
 
+For more details about the approach, see our paper published in Cell Reports.
+The paper should be cited as:
+
+> Way, GP, Sanchez-Vega, F, La, K, Armenia, J, Chatila, WK, Luna, A, Sander, A, Cherniack, AD, Mina, M, Ciriello, G, Schultz, N.,
+The Cancer Genome Atlas Research Network, Sanchez, Y, Greene, CS. 2018.
+Machine Learning Detects Pan-cancer Ras Pathway Activation in The Cancer Genome Atlas.
+_Cell Reports_ 23(1):172-180.e3 doi:10.1016/j.celrep.2018.03.046
+
 #### Ras signalling classifier identifies phenocopying NF1 loss of function events
 
 We have previously described the ability of a machine learning classifier to detect an _NF1_ inactivation signature using Glioblastoma data ([Way _et al._ 2016](http://doi.org/10.1186/s12864-017-3519-7)).
 There, we applied an ensemble of logistic regression classifiers to the problem, but the solutions were unstable and overfit.
 To address these issues, we posited that we could leverage data from diverse cancer types to build a pancancer _NF1_ classifier.
 We also hypothesized that a Ras classifier would be able to detect tumors with _NF1_ inactivation since _NF1_ directly inhibits RAS activity.
+
+### TP53
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.400250.svg)](https://doi.org/10.5281/zenodo.400250)
+
+We are also interested in building a classifier to detect _TP53_ inactivation.
+_TP53_ is the most highly mutated gene in cancer and regulates several important oncogenic processes such as apoptosis and DNA damage response (DDR).
+We include a pipeline to build and evaluate a machine learning _TP53_ classifier.
+See [`tp53_analysis.sh`](tp53_analysis.sh) for more details.
+
+The description for this analysis can be viewed in the following publication:
+
+> Knijnenburg, TA, Wang, L, Zimmermann, MT, Chambwe, N, Gao, GF, Cherniack AD, Fan, H, Shen, H, Way, GP, Greene, CS, Liu, Y, Akbani, R, Feng, B,
+Donehower, LA, Miller, C, Shen, Y, Karimi, M, Chen, H, Kim, P, Jia, P, Shinbrot, E, Zhang, S, Liu, J, Hu, H, Bailey, MH, Yau, C, Wolf, D, Zhao, Z, Weinstein, J,
+Li, L, Ding, L, Mills, GB, Laird, PW, Wheeler, DA, Shmulevich, I, The Cancer Genome Atlas Research Network, Monnat Jr, RJ, Xiao, Y, Wang, C. 2018.
+Genomic and Molecular Landscape of DNA Damage Repair Deficiency across The Cancer Genome Atlas.
+_Cell Reports_ 23(1):239-254.e3 doi:10.1016/j.celrep.2018.03.076
 
 ## Open Access Data
 
@@ -46,6 +62,8 @@ The specific data used in the analyses presented here are archived on Zenodo
 [Gene expression](https://figshare.com/articles/TCGA_PanCanAtlas_Gene_Expression_Data/6146519)) and [copy number](https://figshare.com/articles/TCGA_PanCanAtlas_Copy_Number_Data/6144122) data can be accessed here.
 
 See [`scripts/initialize/download_data.sh`](scripts/initialize/download_data.sh) for more details.
+
+Also note that the definitions for all TCGA cancer-type acronyms is stored in [`data/tcga_dictionary.tsv`](data/tcga_dictionary.tsv).
 
 ## Usage
 

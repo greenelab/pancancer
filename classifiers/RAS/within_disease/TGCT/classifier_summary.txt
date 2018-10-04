@@ -1,0 +1,25 @@
+Parameters:
+Genes:	KRAS	HRAS	NRAS
+Diseases:	TGCT
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.25	0.3
+L1_ratios:	0.15	0.155	0.16	0.2	0.25	0.3	0.4
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.3
+Optimal L1:	0.4
+Coefficients:	classifiers/RAS/within_disease/TGCT/classifier_coefficients.tsv
+Training AUROC:	0.8319641523525019
+Testing AUROC:	0.6666666666666666
+Cross Validation AUROC	0.6262135922330097
+Training AUPR:	0.5875317118329682
+Testing AUPR:	0.626984126984127
+Cross Validation AUPR:	0.3121305911737585
+Disease specific performance:
+	TGCT	Training AUROC:	0.8319641523525019	Testing AUROC:	0.6666666666666666	Cross Validation AUROC:	0.6262135922330097
+	TGCT	Training AUPR:	0.5875317118329682	Testing AUPR:	0.626984126984127	Cross Validation AUPR:	0.3121305911737585

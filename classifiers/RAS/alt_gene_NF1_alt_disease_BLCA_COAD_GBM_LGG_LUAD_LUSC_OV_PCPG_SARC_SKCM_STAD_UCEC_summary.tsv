@@ -1,0 +1,4 @@
+	BLCA	COAD	GBM	LGG	LUAD	LUSC	OV	PCPG	SARC	SKCM	STAD	UCEC
+class	Holdout	Holdout	Full	Full	Holdout	Holdout	Holdout	Holdout	Full	Holdout	Holdout	Holdout
+negatives	34	16	108	473	30	42	15	14	208	18	28	33
+positives	5	13	14	33	17	3	3	2	19	8	5	9

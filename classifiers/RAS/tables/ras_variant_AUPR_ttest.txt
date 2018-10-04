@@ -1,0 +1,12 @@
+
+	Welch Two Sample t-test
+
+data:  ras_genes_aupr$AUPRC and other_genes_aupr$AUPRC
+t = 2.4717, df = 37.005, p-value = 0.009086
+alternative hypothesis: true difference in means is greater than 0
+95 percent confidence interval:
+ 0.009638541         Inf
+sample estimates:
+ mean of x  mean of y 
+0.04606605 0.01570278 
+

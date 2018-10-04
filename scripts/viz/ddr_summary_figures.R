@@ -27,7 +27,8 @@ heatmap_plot_file <- file.path(results_folder, "figures", "tp53_heatmap.pdf")
 heat_file <- file.path(results_folder, "summary_counts.csv")
 heat_df <- readr::read_csv(heat_file)
 
-prop_matrix <- as.matrix(heat_df[, c('TP53_loss_y', 'TP53_y')])
+prop_matrix <- as.matrix(heat_df[, c('TP53_loss_proportion',
+                                     'TP53_proportion')])
 rownames(prop_matrix) <- heat_df$DISEASE
 colnames(prop_matrix) <- c("Loss", "Mutation")
 

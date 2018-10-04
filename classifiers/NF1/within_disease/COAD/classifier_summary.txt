@@ -1,0 +1,25 @@
+Parameters:
+Genes:	NF1
+Diseases:	COAD
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.25	0.3
+L1_ratios:	0.15	0.155	0.16	0.2	0.25	0.3	0.4
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.1
+Optimal L1:	0.15
+Coefficients:	classifiers/NF1/within_disease/COAD/classifier_coefficients.tsv
+Training AUROC:	0.985827664399093
+Testing AUROC:	0.9642857142857143
+Cross Validation AUROC	0.5884353741496599
+Training AUPR:	0.8883928571428571
+Testing AUPR:	0.5
+Cross Validation AUPR:	0.03679690374547501
+Disease specific performance:
+	COAD	Training AUROC:	0.985827664399093	Testing AUROC:	0.9642857142857143	Cross Validation AUROC:	0.5884353741496599
+	COAD	Training AUPR:	0.8883928571428571	Testing AUPR:	0.5	Cross Validation AUPR:	0.03679690374547501

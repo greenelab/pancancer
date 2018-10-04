@@ -1,0 +1,25 @@
+Parameters:
+Genes:	KRAS	HRAS	NRAS
+Diseases:	STAD
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.25	0.3
+L1_ratios:	0.15	0.155	0.16	0.2	0.25	0.3	0.4
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.18
+Optimal L1:	0.155
+Coefficients:	classifiers/RAS/within_disease/STAD/classifier_coefficients.tsv
+Training AUROC:	0.9939591836734694
+Testing AUROC:	0.8154761904761906
+Cross Validation AUROC	0.784
+Training AUPR:	0.9726944431024661
+Testing AUPR:	0.5864417989417989
+Cross Validation AUPR:	0.4525501038746452
+Disease specific performance:
+	STAD	Training AUROC:	0.9939591836734694	Testing AUROC:	0.8154761904761906	Cross Validation AUROC:	0.784
+	STAD	Training AUPR:	0.9726944431024661	Testing AUPR:	0.5864417989417989	Cross Validation AUPR:	0.4525501038746452

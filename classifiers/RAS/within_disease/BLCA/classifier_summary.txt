@@ -1,0 +1,25 @@
+Parameters:
+Genes:	KRAS	HRAS	NRAS
+Diseases:	BLCA
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.25	0.3
+L1_ratios:	0.15	0.155	0.16	0.2	0.25	0.3	0.4
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.3
+Optimal L1:	0.15
+Coefficients:	classifiers/RAS/within_disease/BLCA/classifier_coefficients.tsv
+Training AUROC:	0.9923022095509623
+Testing AUROC:	0.5705882352941176
+Cross Validation AUROC	0.7456165359942979
+Training AUPR:	0.9518626930961627
+Testing AUPR:	0.3284679089026915
+Cross Validation AUPR:	0.34690433224631545
+Disease specific performance:
+	BLCA	Training AUROC:	0.9923022095509623	Testing AUROC:	0.5705882352941176	Cross Validation AUROC:	0.7456165359942979
+	BLCA	Training AUPR:	0.9518626930961627	Testing AUPR:	0.3284679089026915	Cross Validation AUPR:	0.34690433224631545

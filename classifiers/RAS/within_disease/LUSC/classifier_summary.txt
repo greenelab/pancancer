@@ -1,0 +1,25 @@
+Parameters:
+Genes:	KRAS	HRAS	NRAS
+Diseases:	LUSC
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.25	0.3
+L1_ratios:	0.15	0.155	0.16	0.2	0.25	0.3	0.4
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.25
+Optimal L1:	0.4
+Coefficients:	classifiers/RAS/within_disease/LUSC/classifier_coefficients.tsv
+Training AUROC:	0.9414677276746243
+Testing AUROC:	0.565891472868217
+Cross Validation AUROC	0.6615384615384615
+Training AUPR:	0.625113365639891
+Testing AUPR:	0.22191323692992213
+Cross Validation AUPR:	0.16037777850381726
+Disease specific performance:
+	LUSC	Training AUROC:	0.9414677276746243	Testing AUROC:	0.565891472868217	Cross Validation AUROC:	0.6615384615384615
+	LUSC	Training AUPR:	0.625113365639891	Testing AUPR:	0.22191323692992213	Cross Validation AUPR:	0.16037777850381726

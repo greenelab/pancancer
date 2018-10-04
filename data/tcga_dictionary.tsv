@@ -1,0 +1,34 @@
+tissue	acronym
+adrenocortical cancer	ACC
+bladder urothelial carcinoma	BLCA
+breast invasive carcinoma	BRCA
+cervical & endocervical cancer	CESC
+cholangiocarcinoma	CHOL
+colon adenocarcinoma	COAD
+diffuse large B-cell lymphoma	DLBC
+esophageal carcinoma	ESCA
+glioblastoma multiforme	GBM
+head & neck squamous cell carcinoma	HNSC
+kidney chromophobe	KICH
+kidney clear cell carcinoma	KIRC
+kidney papillary cell carcinoma	KIRP
+acute myeloid leukemia	LAML
+brain lower grade glioma	LGG
+liver hepatocellular carcinoma	LIHC
+lung adenocarcinoma	LUAD
+lung squamous cell carcinoma	LUSC
+mesothelioma	MESO
+ovarian serous cystadenocarcinoma	OV
+pancreatic adenocarcinoma	PAAD
+pheochromocytoma & paraganglioma	PCPG
+prostate adenocarcinoma	PRAD
+rectum adenocarcinoma	READ
+sarcoma	SARC
+skin cutaneous melanoma	SKCM
+stomach adenocarcinoma	STAD
+testicular germ cell tumor	TGCT
+thyroid carcinoma	THCA
+thymoma	THYM
+uterine corpus endometrioid carcinoma	UCEC
+uterine carcinosarcoma	UCS
+uveal melanoma	UVM
