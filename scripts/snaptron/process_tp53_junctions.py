@@ -38,15 +38,15 @@ def get_rail_id(row):
     return(all_sample_ids)
 
 # File paths
-sample_file = 'samples.tsv'
-junction_file = 'tp53_junctions.txt'
+sample_file = 'samples.tsv.gz'
+junction_file = 'tp53_junctions.txt.gz'
 mut_scores_file = os.path.join('..', '..', 'classifiers', 'TP53',
                                'tables', 'mutation_classification_scores.tsv')
-out_junc_file = 'junctions_with_mutations.csv'
+out_junc_file = 'junctions_with_mutations.csv.gz'
 
-samples = pd.read_table(sample_file, low_memory=False)
+samples = pd.read_table(sample_file, compression='gzip', low_memory=False)
 dictionary = samples[['rail_id', 'gdc_cases.samples.submitter_id']]
-junc = pd.read_table(junction_file)
+junc = pd.read_table(junction_file, compression='gzip')
 mut_df = pd.read_table(mut_scores_file, index_col=0)
 
 # Process junction file
@@ -76,4 +76,4 @@ junc.drop(['level_13', 'gdc_cases.samples.submitter_id', 'rail_id'], axis=1,
 
 # Merge junctions and mutation classification file
 junctions_full = junc.merge(mut_df, left_on='tcga_id', right_index=True)
-junctions_full.to_csv(out_junc_file)
+junctions_full.to_csv(out_junc_file, compression='gzip')

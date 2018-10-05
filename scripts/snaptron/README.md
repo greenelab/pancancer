@@ -4,12 +4,12 @@
 
 *located at http://snaptron.cs.jhu.edu/*
 
-This pipeline is specific to the DNA Damage Response analysis, but it can
-be modified for other use cases
+This pipeline is specific to the DNA Damage Response analysis, but it can be modified for other use cases
 
 ## Setup
 
-In order to setup the downstream analyses, we first must obtain the data.
+The following steps describe how the two files (`tp53_junctions.txt` and `samples.tsv`) were collected.
+The two files are currently stored in this folder with git lfs.
 
 ### Step 1
 
@@ -32,7 +32,7 @@ Query all TP53 junctions in the TCGA dataset and store in a file
 ./qs --region "TP53" --datasrc tcga > tp53_junctions.txt
 ```
 
-*NOTE:* Move `tp53_junctions.txt` into this folder, 
+*NOTE:* Move `tp53_junctions.txt` into this folder,
 `pancancer/scripts/snaptron/tp53_junctions.txt`
 
 ### Step 3
@@ -46,12 +46,15 @@ wget http://snaptron.cs.jhu.edu/data/tcga/samples.tsv
 *NOTE:* Move `samples.tsv` into this folder,
 `pancancer/scripts/snaptron/samples.tsv`
 
+### Step 4
+
+Use gzip to compress both files.
+
 ## Analysis
 
-We first need to process the data, and then generate the summary plot. Once
-all the data is downloaded, to reproduce the analysis, run:
+We first need to process the data, and then generate the summary plot.
+Once all the data is downloaded, to reproduce the analysis, run:
 
 ```bash
 bash dna_damage_repair_tp53exon.sh
 ```
-
