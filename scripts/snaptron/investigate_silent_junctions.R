@@ -15,7 +15,7 @@ library(RColorBrewer)
 
 set.seed(123)
 
-snaptron_file <- 'junctions_with_mutations.csv'
+snaptron_file <- "tp53_junctions_with_mutations.csv.gz"
 junc_df <- readr::read_csv(snaptron_file)
 junc_df <- junc_df[, -1]
 junc_df <- junc_df[!duplicated(junc_df), ]
@@ -29,7 +29,7 @@ junc_df <- junc_df[junc_df$start == "7675237", ]
 
 # Subset to only silent mutations and be sure to exclude samples that have
 # other types of mutations as well
-silent_mutations <- junc_df[junc_df$HGVSc %in% 'c.375G>T', ] 
+silent_mutations <- junc_df[junc_df$HGVSc %in% "c.375G>T", ]
 silent_mutations <- silent_mutations[silent_mutations$total_status %in% 0, ]
 
 # Get random wild type samples for plotting as well
@@ -37,13 +37,13 @@ random_wt <- sample(unique(junc_df[junc_df$total_status == 0, ]$tcga_id), 19)
 wt_junc <- junc_df[junc_df$tcga_id %in% random_wt, ]
 
 # Subset c.375G>A mutations
-silent_mut_a <- junc_df[junc_df$HGVSc %in% 'c.375G>A', ] 
+silent_mut_a <- junc_df[junc_df$HGVSc %in% "c.375G>A", ]
 silent_mut_a <- silent_mut_a[silent_mut_a$total_status %in% 0, ]
 silent_mut_a <- silent_mut_a[silent_mut_a$include %in% 1, ]
 
 # Setup colors for plotting
 cols <- c("red", "darkmagenta", "cornflowerblue", "darkgoldenrod1",
-          "aquamarine", "cornsilk2", 'green', 'yellow')
+          "aquamarine", "cornsilk2", "green", "yellow")
 snaptron_ids <- unique(silent_mutations[order(silent_mutations$length,
                                      decreasing = TRUE), ]$snaptron_id)
 snaptron_ids <- unique(c(snaptron_ids, silent_mut_a$snaptron_id))
@@ -75,7 +75,7 @@ plot_exon_exon_junc <- function(exon_df, plot_range = x_range, row_add = 1.85) {
       id <- junction$tcga_id
       x = junction$start
       x1 = junction$end
-      
+
       rect(xleft = x,
            ybottom = 0.2 - idx - row_idx,
            xright = x1,
@@ -92,7 +92,7 @@ plot_exon_exon_junc <- function(exon_df, plot_range = x_range, row_add = 1.85) {
 }
 
 # Plot of c.375G>T mutations
-svg("exon-exon_junctions_GtoT.svg", height = 5, width = 5)
+pdf("exon-exon_junctions_GtoT.pdf", height = 5, width = 5)
 plot_exon_exon_junc(exon_df = silent_mutations)
 text(x = 7676325, y = 1.9, "Probability", font = 3, cex = 0.5)
 text(x = 7675237, y = 2, "Exon 5", font = 3, cex = 0.5)
@@ -106,7 +106,7 @@ segments(x = 7675237, x0 = 7675237, y = -45, y0 = 1, col = "black",
 dev.off()
 
 # Plots of WT samples
-svg("exon-exon_junctions_wt_random.svg", height = 5, width = 5)
+pdf("exon-exon_junctions_wt_random.pdf", height = 5, width = 5)
 plot_exon_exon_junc(wt_junc)
 text(x = 7676325, y = 1.9, "Probability", font = 3, cex = 0.5)
 text(x = 7675237, y = 2, "Exon 5", font = 3, cex = 0.5)
@@ -120,7 +120,7 @@ segments(x = 7675237, x0 = 7675237, y = -45, y0 = 1, col = "black",
 dev.off()
 
 # Plot of c.375G>A mutations
-svg("exon-exon_junctions_GtoA.svg", height = 5, width = 5)
+pdf("exon-exon_junctions_GtoA.pdf", height = 5, width = 5)
 plot_exon_exon_junc(exon_df = silent_mut_a, row_add = 2.5)
 text(x = 7676325, y = 1.9, "Probability", font = 3, cex = 0.5)
 text(x = 7675237, y = 2, "Exon 5", font = 3, cex = 0.5)
@@ -141,7 +141,7 @@ wt_trunc <- length(unique(wt_trunc$tcga_id))
 total_wt <- junc_df[junc_df$total_status == 0, ]
 total_wt <- length(unique(total_wt$tcga_id))
 
-silent_trunc <- trunc[trunc$HGVSc %in% c('c.375G>T', 'c.375G>A'), ]
+silent_trunc <- trunc[trunc$HGVSc %in% c("c.375G>T", "c.375G>A"), ]
 silent_trunc <- silent_trunc[silent_trunc$total_status %in% 0, ]
 silent_trunc <- length(unique(silent_trunc$tcga_id))
 

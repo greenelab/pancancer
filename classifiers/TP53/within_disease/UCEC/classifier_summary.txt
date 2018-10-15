@@ -1,0 +1,25 @@
+Parameters:
+Genes:	TP53
+Diseases:	UCEC
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.3	0.4	0.6	0.7
+L1_ratios:	0.1	0.125	0.15	0.2	0.25	0.3	0.35
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.3
+Optimal L1:	0.15
+Coefficients:	classifiers/TP53/within_disease/UCEC/classifier_coefficients.tsv
+Training AUROC:	0.97290540147683
+Testing AUROC:	0.9366515837104072
+Cross Validation AUROC	0.9415954415954416
+Training AUPR:	0.9618931171740587
+Testing AUPR:	0.9448949579831933
+Cross Validation AUPR:	0.9137682621554731
+Disease specific performance:
+	UCEC	Training AUROC:	0.97290540147683	Testing AUROC:	0.9366515837104072	Cross Validation AUROC:	0.9415954415954416
+	UCEC	Training AUPR:	0.9618931171740587	Testing AUPR:	0.9448949579831933	Cross Validation AUPR:	0.9137682621554731

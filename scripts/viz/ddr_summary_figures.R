@@ -12,8 +12,6 @@
 # Output:
 # Several figures to summarize DDR findings
 
-checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
-
 library(dplyr)
 library(pheatmap)
 library(ggplot2)
@@ -27,8 +25,8 @@ heatmap_plot_file <- file.path(results_folder, "figures", "tp53_heatmap.pdf")
 heat_file <- file.path(results_folder, "summary_counts.csv")
 heat_df <- readr::read_csv(heat_file)
 
-prop_matrix <- as.matrix(heat_df[, c('TP53_loss_proportion',
-                                     'TP53_proportion')])
+prop_matrix <- as.matrix(heat_df[, c("TP53_loss_proportion",
+                                     "TP53_proportion")])
 rownames(prop_matrix) <- heat_df$DISEASE
 colnames(prop_matrix) <- c("Loss", "Mutation")
 
@@ -62,7 +60,7 @@ pheatmap(t(prop_matrix * 100), scale = "none", cluster_rows = FALSE,
          width = 8, height = 2)
 
 # 2) Coefficients contributing to the model
-coef_plot_file <- file.path(results_folder, "figures", "ddr_coef_plot.svg")
+coef_plot_file <- file.path(results_folder, "figures", "ddr_coef_plot.pdf")
 coef_df <- results[["Coefficients"]]
 coef_df <- coef_df[, -1]
 coef_df <- coef_df[order(coef_df$weight, decreasing = FALSE), ]
@@ -122,7 +120,7 @@ p <- add_arrow_label(p = p, x = 6500, y = -0.03, label = "log10_mut",
 ggsave(coef_plot_file, plot = p, height = 2.5, width = 2.25)
 
 # 3) Plot distributions of predictions according to variant classification
-var_plot_file <- file.path(results_folder, "figures", "variant_fill_map.svg")
+var_plot_file <- file.path(results_folder, "figures", "variant_fill_map.pdf")
 mut_df <- readr::read_tsv(file.path(results_folder, "tables",
                                     "mutation_classification_scores.tsv"))
 
@@ -197,7 +195,7 @@ ggplot(final_df, aes(Weight, ..count.., fill = Class)) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, 1)) +
   scale_y_continuous(expand = c(0, 0)) + base_theme +
   theme(legend.position = c(1.1, 0.65),
-        legend.background = element_rect(fill = alpha('white', 0)),
+        legend.background = element_rect(fill = alpha("white", 0)),
         legend.text = element_text(size = 7),
         plot.margin = unit(c(0.2, 1.5, 0, 0.1),"cm"),
         axis.text.x = element_text(size = 9),
@@ -224,9 +222,9 @@ nuc_df <- mut_weight_df %>%
 
 aa_df <- aa_df[order(aa_df$count, decreasing = TRUE),]
 nuc_df <- nuc_df[order(nuc_df$count, decreasing = TRUE),]
-write.table(aa_df, file = file.path(results_folder, 'tables',
-                                    'amino_acid_mutation_scores.tsv'),
-            sep = '\t', row.names = FALSE)
-write.table(nuc_df, file = file.path(results_folder, 'tables',
-                                     'nucleotide_mutation_scores.tsv'),
-            sep = '\t', row.names = FALSE)
+write.table(aa_df, file = file.path(results_folder, "tables",
+                                    "amino_acid_mutation_scores.tsv"),
+            sep = "\t", row.names = FALSE)
+write.table(nuc_df, file = file.path(results_folder, "tables",
+                                     "nucleotide_mutation_scores.tsv"),
+            sep = "\t", row.names = FALSE)

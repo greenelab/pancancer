@@ -1,0 +1,25 @@
+Parameters:
+Genes:	TP53
+Diseases:	CESC
+Alternative Genes:	None
+Alternative Diseases:	Auto
+Number of Features:	8034
+Drop Gene:	True
+Copy Number:	True
+Alphas:	0.1	0.13	0.15	0.18	0.2	0.3	0.4	0.6	0.7
+L1_ratios:	0.1	0.125	0.15	0.2	0.25	0.3	0.35
+Hypermutated Removed:	True
+
+Results:
+Optimal Alpha:	0.7
+Optimal L1:	0.125
+Coefficients:	classifiers/TP53/within_disease/CESC/classifier_coefficients.tsv
+Training AUROC:	0.9876146788990826
+Testing AUROC:	0.94
+Cross Validation AUROC	0.7094036697247706
+Training AUPR:	0.9143096449105959
+Testing AUPR:	0.7
+Cross Validation AUPR:	0.17241535503223812
+Disease specific performance:
+	CESC	Training AUROC:	0.9876146788990826	Testing AUROC:	0.94	Cross Validation AUROC:	0.7094036697247706
+	CESC	Training AUPR:	0.9143096449105959	Testing AUPR:	0.7	Cross Validation AUPR:	0.17241535503223812

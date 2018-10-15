@@ -12,17 +12,15 @@
 # Output:
 # Two figures summarizing copy burden across TCGA Pan Can samples
 
-checkpoint::checkpoint("2017-06-01", checkpointLocation = ".")
-
 library(ggplot2)
 
 # Set File Names
 base_file <- file.path("classifiers", "TP53")
 burden_file <- file.path(base_file, "tables", "copy_burden_predictions.tsv")
 snaptron_file <- file.path("scripts", "snaptron",
-                           "junctions_with_mutations.csv")
-frac_alt_plot <- file.path(base_file, "figures", "fraction_altered_plot.svg")
-violin_plot <- file.path(base_file, "figures", "seg_altered_violin_plot.svg")
+                           "junctions_with_mutations.csv.gz")
+frac_alt_plot <- file.path(base_file, "figures", "fraction_altered_plot.pdf")
+violin_plot <- file.path(base_file, "figures", "seg_altered_violin_plot.pdf")
 
 # Load Files
 copy_burden <- readr::read_tsv(burden_file)
@@ -84,7 +82,7 @@ plot_ready$TP53 <- factor(plot_ready$TP53, levels = plot_levels)
 ggplot(plot_ready, aes(x = TP53, y = frac_altered)) +
   ylab("CNV Burden (Fraction Altered)") + xlab("TP53 Status") +
   labs(fill = "") + geom_violin(aes(fill = TP53), size = 0.3, alpha = 0.3,
-                                adjust = 0.7, trim = TRUE) + 
+                                adjust = 0.7, trim = TRUE) +
   geom_boxplot(aes(fill = TP53), size = 0.3, width = 0.1, outlier.size = 0.3) +
   coord_flip() + geom_hline(yintercept = 0.5, linetype = "dashed",
                             color = "red") +
@@ -103,4 +101,3 @@ ggplot(plot_ready, aes(x = TP53, y = frac_altered)) +
   guides(fill = guide_legend(reverse = TRUE, ncol = 1), color = FALSE)
 
 ggsave(violin_plot, height = 2.25, width = 2.5)
-

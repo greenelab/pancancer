@@ -1,11 +1,11 @@
 gene	gene_b	event	neg_logp	p	effect_size
 ATM	TP53	Mutation	6.7	2.16E-7	0.34
-CREBBP	TP53	Mutation	3.0	1.03E-3	0.31
-CDKN2A	TP53	Deletion	67.2	6.71E-68	0.62
 ATR	TP53	Mutation	1.2	NS	0.22
-CHEK2	TP53	Mutation	0.4	NS	0.14
+CDKN2A	TP53	Deletion	67.2	6.71E-68	0.62
 CHEK1	TP53	Mutation	0.4	NS	0.27
+CHEK2	TP53	Mutation	0.4	NS	0.14
+CREBBP	TP53	Mutation	3.0	1.03E-3	0.31
 MDM2	TP53	Amplification	6.4	3.78E-7	0.19
-RPS6KA3	TP53	Mutation	0.8	NS	0.25
 MDM4	TP53	Amplification	13.2	6.88E-14	0.23
 PPM1D	TP53	Amplification	14.7	1.93E-15	0.31
+RPS6KA3	TP53	Mutation	0.8	NS	0.25
