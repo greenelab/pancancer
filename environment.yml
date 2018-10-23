@@ -27,3 +27,5 @@ dependencies:
 - conda-forge::r-cowplot=0.9.3
 - conda-forge::r-hmisc=4.0_3
 - bioconda::biopython=1.70
+- pip:
+  - git+https://github.com/greenelab/tybalt@1b4ad8f8032c66b60c2397307f8d396099946416
