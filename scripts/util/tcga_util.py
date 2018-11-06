@@ -7,6 +7,69 @@ Usage: For import only
 """
 
 
+def get_args():
+    """
+    Get arguments for the main pancancer classifier script
+    """
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-g', '--genes',
+                        help='Comma separated string of HUGO gene symbols')
+    parser.add_argument('-t', '--diseases', default='Auto',
+                        help='Comma sep string of TCGA disease acronyms. '
+                             'If no arguments are passed, filtering will '
+                             'default to options given in --filter_count and '
+                             '--filter_prop.')
+    parser.add_argument('-f', '--folds', default='5',
+                        help='Number of cross validation folds to perform')
+    parser.add_argument('-d', '--drop', action='store_true',
+                        help='Decision to drop input genes from X matrix')
+    parser.add_argument('-u', '--copy_number', action='store_true',
+                        help='Supplement Y matrix with copy number events')
+    parser.add_argument('-c', '--filter_count', default=15,
+                        help='Min number of mutations in diseases to include')
+    parser.add_argument('-p', '--filter_prop', default=0.05,
+                        help='Min proportion of positives to include disease')
+    parser.add_argument('-n', '--num_features', default=8000,
+                        help='Number of MAD genes to include in classifier')
+    parser.add_argument('-a', '--alphas', default='0.1,0.15,0.2,0.5,0.8,1',
+                        help='the alphas for parameter sweep')
+    parser.add_argument('-l', '--l1_ratios', default='0,0.1,0.15,0.18,0.2,0.3',
+                        help='the l1 ratios for parameter sweep')
+    parser.add_argument('-b', '--alt_genes', default='None',
+                        help='alternative genes to test performance')
+    parser.add_argument('-s', '--alt_diseases', default="Auto",
+                        help='The alternative diseases to test performance')
+    parser.add_argument('-i', '--alt_filter_count', default=15,
+                        help='Min number of mutations in disease to include')
+    parser.add_argument('-r', '--alt_filter_prop', default=0.05,
+                        help='Min proportion of positives to include disease')
+    parser.add_argument('-o', '--alt_folder', default='Auto',
+                        help='Provide an alternative folder to save results')
+    parser.add_argument('-v', '--remove_hyper', action='store_true',
+                        help='Remove hypermutated samples')
+    parser.add_argument('-k', '--keep_intermediate', action='store_true',
+                        help='Keep intermediate ROC values for plotting')
+    parser.add_argument('-x', '--x_matrix', default='raw',
+                        help='Filename of features to use in model')
+    parser.add_argument('-e', '--shuffled', action='store_true',
+                        help='Shuffle the input gene exprs matrix alongside')
+    parser.add_argument('--shuffled_before_training', action='store_true',
+                        help='Shuffle the gene exprs matrix before training')
+    parser.add_argument('-m', '--no_mutation', action='store_false',
+                        help='Remove mutation data from y matrix')
+    parser.add_argument('-z', '--drop_rasopathy', action='store_true',
+                        help='Decision to drop rasopathy genes from X matrix')
+    parser.add_argument('-q', '--drop_expression', action='store_true',
+                        help='Decision to drop gene expression values from X')
+    parser.add_argument('-j', '--drop_covariates', action='store_true',
+                        help='Decision to drop covariate information from X')
+
+    args = parser.parse_args()
+    return args
+
+
 def get_threshold_metrics(y_true, y_pred, drop_intermediate=False,
                           disease='all'):
     """
