@@ -22,7 +22,7 @@ cwd = os.getcwd()
 
 # Ensure that the path is starting in the scripts directory
 if not cwd.split('/')[-1] == 'scripts':
-    os.chdir(os.path.join(cwd, 'scripts'))
+    sys.path.append(os.path.join(cwd, 'scripts'))
 
 
 # In[3]:
@@ -48,7 +48,7 @@ ras_folder = os.path.join('..', 'classifiers', 'RAS')
 
 # Load Datasets
 mut_file = os.path.join('..', 'data', 'pancan_mutation_freeze.tsv.gz')
-sample_freeze_file = os.path.join('..', 'data', 'sampleset_freeze.csv')
+sample_freeze_file = os.path.join('..', 'data', 'sample_freeze.tsv')
 copy_loss_file = os.path.join('..', 'data', 'copy_number_loss_status.tsv.gz')
 copy_gain_file = os.path.join('..', 'data', 'copy_number_gain_status.tsv.gz')
 
@@ -151,13 +151,13 @@ full_auprc_remove = remove_ras_status_df.apply(lambda x: get_gene_auprc(x, w=rem
 
 
 # Get output metrics for Ras classification
-output_ras_metrics = pd.concat([full_auroc, full_auroc_remove], axis=1)
+output_ras_metrics = pd.concat([full_auroc, full_auroc_remove], axis=1, sort=False)
 output_ras_metrics = output_ras_metrics * 100  # To get percent
 output_ras_metrics = output_ras_metrics - 50  # Subtract 50 from AUROC only
 
 # Combine with AUPRC
 output_ras_metrics = pd.concat([output_ras_metrics, full_auprc * 100,
-                                full_auprc_remove * 100], axis=1)
+                                full_auprc_remove * 100], axis=1, sort=False)
 output_ras_metrics.columns = ['ras_auroc', 'no_ras_auroc', 'ras_auprc', 'no_ras_auprc']
 
 # Fill removed Ras metrics with included metrics
@@ -254,7 +254,7 @@ all_genes_auprc_df = all_genes_auprc_df.assign(auprc_rank = list(range(0, all_ge
 all_genes_auroc_df = all_genes_auroc_df.assign(auroc_rank = list(range(0, all_genes_auprc_df.shape[0])))
 
 all_genes_auprc_df = all_genes_auprc_df.assign(ras = 0)
-all_genes_auprc_df.ix[all_genes_auprc_df.index.isin(ras_genes_df['genes']), 'ras'] = 1
+all_genes_auprc_df.loc[all_genes_auprc_df.index.isin(ras_genes_df['genes']), 'ras'] = 1
 
 all_genes_metrics_df = all_genes_auprc_df.reset_index().merge(all_genes_auroc_df,
                                                               left_on='index', right_index=True)
@@ -262,3 +262,4 @@ all_genes_metrics_df = all_genes_auprc_df.reset_index().merge(all_genes_auroc_df
 all_genes_metrics_df.columns = ['Gene', 'AUPRC', 'AUPRC Rank', 'ras', 'AUROC', 'AUROC Rank']
 all_genes_metrics_df.to_csv(all_gene_metrics_file, sep='\t', index=False)
 all_genes_metrics_df.head(10)
+

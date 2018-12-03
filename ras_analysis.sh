@@ -76,7 +76,12 @@ python scripts/visualize_decisions.py --scores 'classifiers/RAS'
 ###############
 python scripts/map_mutation_class.py --scores 'classifiers/RAS' \
         --genes 'data/ras_genes.csv'
-python scripts/alternative_genes_pathwaymapper.py
+
+jupyter nbconvert --to=script \
+        --FilesWriter.build_directory=scripts \
+        --ExecutePreprocessor.kernel_name=python3 \
+        --ExecutePreprocessor.timeout=100000 \
+        --execute scripts/alternative_genes_pathwaymapper.ipynb
 
 ###############
 # Step 6. Rerun Ras classifier without THCA and SKCM and perform analysis
@@ -183,7 +188,11 @@ python scripts/pancancer_classifier.py --genes 'KRAS,HRAS,NRAS' \
 # Step 8. Plot additional Ras, NF1, and BRAF results
 ###############
 # Plot Ras pathway heatmaps
-python scripts/ras_count_heatmaps.py
+jupyter nbconvert --to=script \
+        --FilesWriter.build_directory=scripts \
+        --ExecutePreprocessor.kernel_name=python3 \
+        --ExecutePreprocessor.timeout=100000 \
+        --execute scripts/ras_count_heatmaps.ipynb
 
 # Visualize CCLE predictions
 jupyter nbconvert --to=script \

@@ -26,7 +26,7 @@ if not cwd.split('/')[-1] == 'scripts':
 # In[3]:
 
 
-#get_ipython().run_line_magic('matplotlib', 'inline')
+get_ipython().run_line_magic('matplotlib', 'inline')
 plt.style.use('seaborn-notebook')
 
 
@@ -35,15 +35,13 @@ plt.style.use('seaborn-notebook')
 
 # Load Datasets
 mut_file = os.path.join('..', 'data', 'pancan_mutation_freeze.tsv.gz')
-sample_freeze_file = os.path.join('..', 'data', 'sampleset_freeze.csv')
+sample_freeze_file = os.path.join('..', 'data', 'sample_freeze.tsv')
 copy_loss_file = os.path.join('..', 'data', 'copy_number_loss_status.tsv.gz')
 copy_gain_file = os.path.join('..', 'data', 'copy_number_gain_status.tsv.gz')
 cancer_genes_file = os.path.join('..', 'data', 'vogelstein_cancergenes.tsv')
 
 mutation_df = pd.read_table(mut_file, index_col=0)
-sample_freeze = (pd.read_csv(sample_freeze_file, index_col=0)
-                   .drop(['SQUAMOUS', 'COMPLETE'], axis='columns')
-                )
+sample_freeze = pd.read_table(sample_freeze_file, index_col=0)
 copy_loss_df = pd.read_table(copy_loss_file, index_col=0)
 copy_gain_df = pd.read_table(copy_gain_file, index_col=0)
 cancer_genes_df = pd.read_table(cancer_genes_file)
@@ -122,11 +120,11 @@ mut_heatmap_df = mut_heatmap_df.append(gene_avg)
 
 
 sns.set_style("whitegrid")
-sns.heatmap(mut_heatmap_df, linewidths=0.2, linecolor='black',
+sns.heatmap(mut_heatmap_df, linewidths=0.2, linecolor='black', 
             cmap='Blues_r', square=True, cbar=True)
 plt.ylabel('Cancer Types', fontsize=16)
 plt.xlabel('Ras Pathway Genes', fontsize=16)
-plt.savefig(os.path.join(results_path, 'mut_df.svg'))
+plt.savefig(os.path.join(results_path, 'mut_df.pdf'))
 
 
 # In[14]:
@@ -156,11 +154,11 @@ copy_heatmap_df = copy_heatmap_df.append(copy_avg)
 
 
 sns.set_style("whitegrid")
-sns.heatmap(copy_heatmap_df, linewidths=0.2, linecolor='black',
+sns.heatmap(copy_heatmap_df, linewidths=0.2, linecolor='black', 
             cmap='Blues_r', square=True)
 plt.ylabel('Cancer Types', fontsize=16)
 plt.xlabel('Ras Pathway Genes', fontsize=16)
-plt.savefig(os.path.join(results_path, 'copy_df.svg'))
+plt.savefig(os.path.join(results_path, 'copy_df.pdf'))
 
 
 # In[18]:
@@ -196,12 +194,12 @@ comb_heatmap_plot = comb_heatmap_df.append(comb_avg)
 
 
 sns.set_style("whitegrid")
-sns.heatmap(comb_heatmap_plot, linewidths=0.2, linecolor='black',
+sns.heatmap(comb_heatmap_plot, linewidths=0.2, linecolor='black', 
             cmap='Blues_r', square=True)
 plt.ylabel('Cancer Types', fontsize=16)
 plt.xlabel('Ras Pathway Genes', fontsize=16)
 plt.tight_layout()
-plt.savefig(os.path.join(results_path, 'combined_df.svg'))
+plt.savefig(os.path.join(results_path, 'combined_df.pdf'))
 
 
 # ## Generating Pathway Mapper Text Files
@@ -209,38 +207,37 @@ plt.savefig(os.path.join(results_path, 'combined_df.svg'))
 # In[23]:
 
 
-summary_score = pd.DataFrame([mut_heatmap_df.ix['Total', :], copy_heatmap_df.ix['Total', :]])
-summary_score = summary_score.T
-summary_score.columns = ['mutation', 'copy_number']
-summary_score = summary_score * 100
-summary_score = summary_score.round(decimals = 1)
+summary_score_df = (
+    pd.DataFrame(
+        [mut_heatmap_df.loc['Total', :], copy_heatmap_df.loc['Total', :]]
+    )
+    .transpose()
+)
+summary_score_df.columns = ['mutation', 'copy_number']
+summary_score_df = summary_score_df * 100
+summary_score_df = summary_score_df.round(decimals = 1)
 
 
 # In[24]:
 
 
-mut_heatmap_df
+# Create negative percentages for tumor suppressors in the Ras Pathway
+tum_sup_mult = pd.Series([1] * 34 + [-1] * 4 + [1])
+tum_sup_mult.index = summary_score_df.index
 
 
 # In[25]:
 
 
-tum_sup_mult = pd.Series([1] * 34 + [-1] * 4 + [1])
-tum_sup_mult.index = summary_score.index
-
-
-# In[26]:
-
-
-summary_score = summary_score.mul(tum_sup_mult, axis=0)
+summary_score_df = summary_score_df.mul(tum_sup_mult, axis=0)
 pathway_mapper_file = os.path.join(results_path, 'tables',
                                    'pathwaymapper_percentages.txt')
-summary_score.to_csv(pathway_mapper_file, sep='\t')
+summary_score_df.to_csv(pathway_mapper_file, sep='\t')
 
 
 # ## Output number of Ras events per sample
 
-# In[27]:
+# In[26]:
 
 
 decision_file = os.path.join(results_path, 'classifier_decisions.tsv')
@@ -248,7 +245,7 @@ decisions_df = pd.read_table(decision_file)
 decisions_df.head()
 
 
-# In[28]:
+# In[27]:
 
 
 other_ras_df = mutation_sub_df.drop(['KRAS', 'HRAS', 'NRAS'], axis=1)
@@ -256,7 +253,7 @@ other_ras_copy_df = copy_df.drop(['KRAS', 'HRAS', 'NRAS'], axis=1)
 other_ras_all_df = comb_heat_df.drop(['KRAS', 'HRAS', 'NRAS'], axis=1)
 
 
-# In[29]:
+# In[28]:
 
 
 total_ras_mutations = pd.DataFrame(other_ras_df.sum(axis=1), columns=['mutation_count'])
@@ -265,7 +262,7 @@ total_ras_all = pd.DataFrame(other_ras_all_df.sum(axis=1), columns=['all_count']
 total_ras_all.index = comb_heat_df['SAMPLE_BARCODE']
 
 
-# In[30]:
+# In[29]:
 
 
 # Define output summary of mutation, copy, and total counts per sample by Ras pathway
@@ -274,18 +271,18 @@ count_summary = (
     .merge(total_ras_mutations, left_on='SAMPLE_BARCODE', right_index=True)
     )
 hyper_samples = decisions_df[decisions_df['hypermutated'] == 1]['SAMPLE_BARCODE']
-count_summary.ix[count_summary['SAMPLE_BARCODE'].isin(hyper_samples),
-                 'mutation_count'] = 'hyper'
+count_summary.loc[count_summary['SAMPLE_BARCODE'].isin(hyper_samples),
+                  'mutation_count'] = 'hyper'
 count_summary.head()
 
 
-# In[31]:
+# In[30]:
 
 
 count_summary['mutation_count'].value_counts()
 
 
-# In[32]:
+# In[31]:
 
 
 count_summary = total_ras_copy_events.merge(count_summary, left_index=True,
@@ -299,9 +296,10 @@ count_summary = (
 count_summary.head()
 
 
-# In[33]:
+# In[32]:
 
 
 count_summary_file = os.path.join(results_path, 'tables',
                                   'ras_events_per_sample.tsv')
 count_summary.to_csv(count_summary_file, sep='\t', index=False)
+
