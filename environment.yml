@@ -23,7 +23,7 @@ dependencies:
 - conda-forge::r-optparse=1.4.4
 - conda-forge::r-pheatmap=1.0.10
 - conda-forge::r-ggpmisc=0.3.0
-- conda-forge::r-ggrepel 0.8.0
+- conda-forge::r-ggrepel=0.8.0
 - conda-forge::r-cowplot=0.9.3
 - conda-forge::r-hmisc=4.0_3
 - bioconda::biopython=1.70
