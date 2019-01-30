@@ -21,17 +21,17 @@ def get_args():
                              'If no arguments are passed, filtering will '
                              'default to options given in --filter_count and '
                              '--filter_prop.')
-    parser.add_argument('-f', '--folds', default='5',
+    parser.add_argument('-f', '--folds', default='5', type=int,
                         help='Number of cross validation folds to perform')
     parser.add_argument('-d', '--drop', action='store_true',
                         help='Decision to drop input genes from X matrix')
     parser.add_argument('-u', '--copy_number', action='store_true',
                         help='Supplement Y matrix with copy number events')
-    parser.add_argument('-c', '--filter_count', default=15,
+    parser.add_argument('-c', '--filter_count', default=15, type=int,
                         help='Min number of mutations in diseases to include')
-    parser.add_argument('-p', '--filter_prop', default=0.05,
+    parser.add_argument('-p', '--filter_prop', default=0.05, type=float,
                         help='Min proportion of positives to include disease')
-    parser.add_argument('-n', '--num_features', default=8000,
+    parser.add_argument('-n', '--num_features', default=8000, type=int,
                         help='Number of MAD genes to include in classifier')
     parser.add_argument('-a', '--alphas', default='0.1,0.15,0.2,0.5,0.8,1',
                         help='the alphas for parameter sweep')
@@ -41,9 +41,9 @@ def get_args():
                         help='alternative genes to test performance')
     parser.add_argument('-s', '--alt_diseases', default="Auto",
                         help='The alternative diseases to test performance')
-    parser.add_argument('-i', '--alt_filter_count', default=15,
+    parser.add_argument('-i', '--alt_filter_count', default=15, type=int,
                         help='Min number of mutations in disease to include')
-    parser.add_argument('-r', '--alt_filter_prop', default=0.05,
+    parser.add_argument('-r', '--alt_filter_prop', default=0.05, type=float,
                         help='Min proportion of positives to include disease')
     parser.add_argument('-o', '--alt_folder', default='Auto',
                         help='Provide an alternative folder to save results')
